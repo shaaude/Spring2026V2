@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="description" content="Arlington Soccer Association Spring 2026 competitive intelligence dashboard.">
+  <meta name="theme-color" content="#0a0f1a">
+  <title>Arlington SA · Spring 2026</title>
+  <style>
+    :root {
+      --bg:#0a0f1a; --bg2:#111827; --bg3:#1f2937;
+      --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.18);
+      --text:#e2e8f0; --text2:#94a3b8; --text3:#7a8fa6;
+      --red:#dc2626; --green:#22c55e; --yellow:#eab308;
+      --orange:#f97316; --blue:#3b82f6;
+      --accent:#dc2626;
+      --radius:8px; --font:'Courier New',Courier,monospace;
+    }
+    @media(prefers-color-scheme:light){
+      :root{
+        --bg:#f1f5f9; --bg2:#ffffff; --bg3:#f8fafc;
+        --border:rgba(0,0,0,0.07); --border2:rgba(0,0,0,0.15);
+        --text:#0f172a; --text2:#475569; --text3:#5c6f82;
+      }
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{font-size:16px;-webkit-text-size-adjust:100%}
+    body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh}
+    .grid-bg{position:fixed;top:0;left:0;right:0;bottom:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(220,38,38,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(220,38,38,.03) 1px,transparent 1px);background-size:40px 40px}
+    .wrap{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:18px 14px 48px}
+
+    /* HEADER */
+    .hdr{text-align:center;padding-bottom:16px;border-bottom:1px solid rgba(220,38,38,.2);margin-bottom:18px}
+    .hdr-eyebrow{font-size:10px;color:var(--text2);letter-spacing:4px;text-transform:uppercase;margin-bottom:8px;line-height:1.8}
+    .team-selector-wrap{display:inline-flex;align-items:center;justify-content:center;position:relative;cursor:pointer;margin-bottom:4px}
+    .hdr-title{font-size:clamp(22px,6vw,32px);font-weight:700;letter-spacing:clamp(3px,1.5vw,7px);line-height:1;color:var(--accent);transition:color .2s}
+    .team-dropdown-arrow{font-size:clamp(16px,4vw,22px);margin-left:10px;opacity:0.6;color:var(--accent);transition:color .2s}
+    .team-select{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:16px;border:none;background:none;-webkit-appearance:none}
+    .hdr-sub{font-size:10px;color:var(--text2);letter-spacing:2px;margin-top:6px}
+    .hdr-badges{display:flex;gap:10px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+    .hdr-badge{font-size:11px;padding:3px 10px;border-radius:var(--radius);border:0.5px solid}
+
+    /* TABS */
+    .tabs{display:flex;gap:4px;margin-bottom:18px;flex-wrap:wrap;justify-content:center}
+    .tab{padding:7px 12px;font-size:10px;font-family:var(--font);background:transparent;color:var(--text3);border:0.5px solid var(--border2);cursor:pointer;letter-spacing:2px;text-transform:uppercase;border-radius:var(--radius);transition:all .15s}
+    .tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .tab:hover:not(.active){background:var(--bg3)}
+
+    /* METRICS */
+    .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+    @media(max-width:500px){.metrics{grid-template-columns:repeat(2,1fr)}}
+    .metric{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center}
+    .metric-label{font-size:9px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+    .metric-val{font-size:26px;font-weight:700}
+    .win-bar-wrap{height:3px;background:var(--border);margin-top:3px;border-radius:2px;overflow:hidden}
+    .win-bar{height:100%;border-radius:2px}
+    .badge{display:inline-block;padding:2px 7px;font-size:9px;border-radius:var(--radius);border:0.5px solid;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+    .section-label{font-size:9px;color:var(--text2);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px}
+    .game-detail{background:var(--bg3);border-top:0.5px solid var(--border);padding:14px;font-size:11px}
+    .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px}
+    @media(max-width:500px){.detail-grid{grid-template-columns:1fr}}
+
+    /* DESKTOP TABLE */
+    .forecast-desktop{display:block}
+    .forecast-mobile{display:none}
+    .col-hdr{display:grid;grid-template-columns:28px 64px 1fr 54px 54px 62px 42px 40px 68px;gap:5px;padding:4px 14px;font-size:9px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+    .game-row-d{display:grid;grid-template-columns:28px 64px 1fr 54px 54px 62px 42px 40px 68px;gap:5px;padding:11px 14px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:5px;cursor:pointer;font-size:11px;align-items:center;transition:border-color .15s}
+    .game-row-d:hover{border-color:var(--border2)}
+
+    /* MOBILE CARDS */
+    .game-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .card-header{display:flex;align-items:center;gap:12px;padding:14px}
+    .card-num{font-size:22px;font-weight:700;color:var(--accent);min-width:28px;line-height:1}
+    .card-opp-block{flex:1}
+    .card-opp{font-size:15px;font-weight:700;line-height:1.2}
+    .card-meta{display:flex;gap:8px;align-items:center;margin-top:4px}
+    .card-date{font-size:10px;color:var(--text3)}
+    .card-venue{font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;padding:1px 5px;border:0.5px solid var(--border);border-radius:4px}
+    .card-pct-block{text-align:right;min-width:52px}
+    .card-pct{font-size:20px;font-weight:700}
+    .card-stats{display:grid;grid-template-columns:repeat(3,1fr);border-top:0.5px solid var(--border)}
+    .stat-cell{padding:10px 8px;text-align:center;border-right:0.5px solid var(--border)}
+    .stat-cell:last-child{border-right:none}
+    .stat-label{font-size:9px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+    .stat-val{font-size:16px;font-weight:700}
+    .card-footer{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:0.5px solid var(--border);background:var(--bg3)}
+    .card-score-label{font-size:9px;color:var(--text2);letter-spacing:1px;text-transform:uppercase}
+    .card-score{font-size:15px;font-weight:700}
+    .card-pick{padding:4px 12px;font-size:11px;font-weight:700;border-radius:var(--radius);border:1.5px solid;letter-spacing:2px}
+
+    /* RUNWAY */
+    .runway-wrap{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:18px}
+    .runway-grid{display:grid;grid-template-columns:repeat(9,1fr);gap:8px}
+    @media(max-width:760px){.runway-grid{grid-template-columns:repeat(3,1fr)}}
+    .runway-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:10px;min-height:92px;display:flex;flex-direction:column;justify-content:space-between}
+    .runway-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+    .runway-g{font-size:9px;color:var(--text2);letter-spacing:2px}
+    .runway-pct{font-size:16px;font-weight:700}
+    .runway-opp{font-size:10px;font-weight:700;line-height:1.3}
+    .runway-meta{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:8px;color:var(--text3);margin-top:6px}
+    .runway-conf{font-size:8px;padding:2px 5px;border-radius:5px;border:1px solid}
+
+    /* SNAPSHOT */
+    .snap-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+    @media(max-width:700px){.snap-grid{grid-template-columns:repeat(2,1fr)}}
+    .snap-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px}
+    .snap-label{font-size:8px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+    .snap-val{font-size:15px;font-weight:700}
+    .compare-bar-wrap{margin-top:8px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px}
+    .compare-head{display:grid;grid-template-columns:1fr 60px 1fr;gap:10px;align-items:center;margin-bottom:6px}
+    .compare-name{font-size:10px;font-weight:700}
+    .compare-center{font-size:8px;color:var(--text3);text-align:center;letter-spacing:2px;text-transform:uppercase}
+    .compare-bar{height:10px;background:var(--border);border-radius:999px;position:relative;overflow:hidden}
+    .compare-fill-left,.compare-fill-right{position:absolute;top:0;bottom:0}
+    .compare-fill-left{right:50%;transform-origin:right center}
+    .compare-fill-right{left:50%;transform-origin:left center}
+    .compare-scale{display:flex;justify-content:space-between;font-size:8px;color:var(--text3);margin-top:5px}
+
+    /* NETWORK */
+    #netCanvas{width:100%;display:block;border:0.5px solid var(--border);border-radius:var(--radius)}
+    .net-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:14px}
+    @media(max-width:500px){.net-grid{grid-template-columns:repeat(3,1fr)}}
+    .net-card{padding:7px 9px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius)}
+    .legend-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px;font-size:11px;color:var(--text2);align-items:center}
+    .legend-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;flex-shrink:0}
+
+    /* HEATMAP */
+    .hm-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .hm-table{border-collapse:collapse;font-size:10px;min-width:480px}
+    .hm-table td,.hm-table th{padding:5px;text-align:center;border:0.5px solid var(--border)}
+    .hm-table th{font-size:8px;font-weight:700;color:var(--text3)}
+    .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:7px;font-size:10px}
+
+    /* BUBBLE */
+    .bubble-wrap{position:relative;width:100%;height:clamp(260px,55vw,380px);background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);overflow:hidden}
+    .bubble{position:absolute;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1.5px solid}
+    .bubble-label{font-size:9px;font-weight:700;text-align:center;line-height:1.2;padding:0 3px;color:#fff}
+    .q-label{position:absolute;font-size:9px;color:var(--text3);letter-spacing:1px}
+    .bubble-legend{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:14px}
+    @media(max-width:500px){.bubble-legend{grid-template-columns:repeat(3,1fr)}}
+
+    /* TIMELINE */
+    .tl-wrap{position:relative;padding-left:22px}
+    .tl-spine{position:absolute;left:6px;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,var(--accent),var(--border))}
+    .tl-dot{position:absolute;left:2px;width:9px;height:9px;border-radius:50%;border:1px solid}
+    .tl-item{padding:8px 10px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:6px;font-size:11px}
+    .tl-month{font-size:9px;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin:14px 0 6px}
+    .tl-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
+    .tl-score{color:var(--text3);margin:0 6px}
+    .tl-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+
+    /* FORM */
+    .form-wrap{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px}
+    .form-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+    @media(max-width:600px){.form-metrics{grid-template-columns:repeat(2,1fr)}}
+    .form-metric{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;text-align:center}
+    .form-canvas-wrap{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px}
+    #formCanvas{width:100%;display:block}
+    .form-legend{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-top:10px;font-size:10px;color:var(--text2)}
+    .legend-line{width:18px;height:0;border-top:2px solid;display:inline-block;margin-right:6px;vertical-align:middle}
+
+    .footer{text-align:center;margin-top:32px;padding-top:16px;border-top:1px solid var(--border);font-size:9px;color:var(--text3);letter-spacing:2px;line-height:2}
+
+    @media(max-width:699px){
+      .forecast-desktop{display:none}
+      .forecast-mobile{display:block}
+    }
+  </style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="wrap">
+
+  <div class="hdr">
+    <div class="hdr-eyebrow">Not affiliated with Arlington Soccer Association<br>Spring 2026 Intelligence</div>
+    <div class="team-selector-wrap">
+      <div class="hdr-title" id="hdr-title">ARL 2015G RED</div>
+      <div class="team-dropdown-arrow" id="hdr-arrow">▾</div>
+      <select class="team-select" id="team-select" onchange="switchTeam(this.value)">
+        <option value="RED">ARL 2015G Red</option>
+        <option value="WHITE">ARL 2015G White</option>
+        <option value="PREACAD">ARL 2016G Pre-Academy 1</option>
+      </select>
+    </div>
+    <div class="hdr-sub" id="hdr-sub">NCSL Division NG11D1 · Coach: I. Zegada-Frias</div>
+    <div class="hdr-badges" id="hdr-badges">
+      <span class="hdr-badge" style="color:#22c55e;border-color:rgba(34,197,94,.35)">#369 US/CAN</span>
+      <span class="hdr-badge" style="color:#dc2626;border-color:rgba(220,38,38,.3)">#12 Virginia</span>
+      <span class="hdr-badge" style="color:var(--text3);border-color:var(--border)">v6 · Mar 2026</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showView('forecast')">Forecast &amp; Odds</button>
+    <button class="tab" onclick="showView('network')">Rivalry Network</button>
+    <button class="tab" onclick="showView('heatmap')">Heat Map</button>
+    <button class="tab" onclick="showView('bubble')">Strength Bubble</button>
+    <button class="tab" onclick="showView('timeline')">Timeline</button>
+    <button class="tab" onclick="showView('form')">Form Curve</button>
+  </div>
+
+  <div id="view-forecast">
+    <div class="metrics" id="metrics-bar"></div>
+
+    <div class="runway-wrap">
+      <div class="section-label">Schedule runway · confidence + difficulty</div>
+      <div id="runway-grid" class="runway-grid"></div>
+    </div>
+
+    <div class="forecast-desktop">
+      <div class="col-hdr"><div>#</div><div>Date</div><div>Opponent</div><div>Win %</div><div>Spread</div><div>M-Line</div><div>O/U</div><div>Pick</div><div>Score</div></div>
+      <div id="forecast-desktop-list"></div>
+    </div>
+    <div class="forecast-mobile" id="forecast-mobile-list"></div>
+    <div style="font-size:9px;color:var(--text3);text-align:center;margin-top:12px;letter-spacing:1px;line-height:1.9">Tap any game to expand · H2H + transitive inference · Not gambling advice</div>
+  </div>
+
+  <div id="view-network" style="display:none">
+    <div class="legend-row">
+      <span><span class="legend-dot" style="background:#22c55e"></span>Win</span>
+      <span><span class="legend-dot" style="background:#ef4444"></span>Loss</span>
+      <span><span class="legend-dot" style="background:#eab308"></span>Draw</span>
+      <span style="font-size:10px;color:var(--text3)">Badge = state rank · Selected team = center</span>
+    </div>
+    <canvas id="netCanvas"></canvas>
+    <div class="net-grid" id="net-team-grid"></div>
+  </div>
+
+  <div id="view-heatmap" style="display:none">
+    <div style="margin-bottom:20px">
+      <div class="section-label">Head-to-head results matrix (row vs column · W-L-D)</div>
+      <div class="hm-scroll"><table class="hm-table" id="hm-table"></table></div>
+    </div>
+    <div style="margin-top:24px">
+      <div class="section-label" id="prob-label">Win probability by opponent</div>
+      <div id="prob-bars"></div>
+      <div style="display:flex;justify-content:center;gap:30px;margin-top:8px;font-size:9px;color:var(--text3)"><span>← Opponent favored</span><span>Selected team favored →</span></div>
+    </div>
+  </div>
+
+  <div id="view-bubble" style="display:none">
+    <div style="font-size:9px;color:var(--text3);text-align:center;margin-bottom:8px;letter-spacing:1px">X = composite strength · Y = attacking efficiency · Size = national ranking weight</div>
+    <div class="bubble-wrap" id="bubble-wrap">
+      <div class="q-label" style="top:8px;right:10px">Elite</div>
+      <div class="q-label" style="bottom:8px;right:10px">Strong def.</div>
+      <div class="q-label" style="top:8px;left:10px">High offense</div>
+      <div class="q-label" style="bottom:8px;left:10px">Developing</div>
+      <div style="position:absolute;left:50%;top:0;bottom:0;border-left:0.5px dashed var(--border)"></div>
+      <div style="position:absolute;top:50%;left:0;right:0;border-top:0.5px dashed var(--border)"></div>
+    </div>
+    <div class="bubble-legend" id="bubble-legend"></div>
+  </div>
+
+  <div id="view-timeline" style="display:none">
+    <div style="font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:14px;text-align:center">Confirmed results + Spring 2026 forecast · Dashed = predicted</div>
+    <div class="tl-wrap" id="tl-list"><div class="tl-spine"></div></div>
+  </div>
+
+  <div id="view-form" style="display:none">
+    <div class="form-wrap">
+      <div class="form-metrics" id="form-metrics"></div>
+      <div class="form-canvas-wrap">
+        <canvas id="formCanvas"></canvas>
+        <div class="form-legend">
+          <span><span class="legend-line" style="border-color:#3b82f6"></span>Actual cumulative points</span>
+          <span><span class="legend-line" style="border-color:var(--accent);border-style:dashed"></span>Projected cumulative points</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    ARLINGTON SOCCER ASSOCIATION · SPRING 2026 COMPETITIVE INTELLIGENCE<br>
+    Data: NCSL Fall 2025 · GotSport Tournament History · Transitive Inference Model<br>
+    Built by Shaaude · Not affiliated with NCSL or Arlington Soccer Association
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────
+   TEAM REGISTRY
+───────────────────────────────────────── */
+const TEAMS={
+  ARL_RED:{short:"ARL Red",color:"#dc2626",stateRank:12,rank:369},
+  ARL_W:{short:"ARL White",color:"#6b7280",stateRank:51,rank:2122},
+  PRE_ACAD:{short:"Pre-Acad 1",color:"#f97316",stateRank:2,rank:147},
+  VRSC:{short:"VRSC Pre-GA",color:"#f59e0b",stateRank:13,rank:413},
+  VRSC2:{short:"VRSC Pre-GA2",color:"#d97706",stateRank:22,rank:680},
+  MCLN_W:{short:"McLean W",color:"#3b82f6",stateRank:37,rank:458},
+  MCLN_G:{short:"McLean Green",color:"#1d4ed8",stateRank:5,rank:120},
+  VALR:{short:"VALR Gold",color:"#eab308",stateRank:29,rank:1100},
+  ALEX_R:{short:"Alex Red",color:"#7c3aed",stateRank:20,rank:664},
+  ALEX_16R:{short:"Alex 16R",color:"#14b8a6",stateRank:5,rank:201},
+  VISTA:{short:"VISTA",color:"#10b981",stateRank:26,rank:878},
+  SYC:{short:"SYC Pre-GA",color:"#ec4899",stateRank:8,rank:180},
+  SYC_15:{short:"SYC 2015 Pre-GA II",color:"#db2777",stateRank:10,rank:280},
+  POT_PREM:{short:"Potomac Prem",color:"#8b5cf6",stateRank:6,rank:160},
+  PPA:{short:"PPA Green Girls",color:"#84cc16",stateRank:35,rank:900},
+  BRU:{short:"BRU Orange",color:"#ea580c",stateRank:40,rank:1050},
+  GFR:{short:"GFR White",color:"#64748b",stateRank:42,rank:1100},
+  PW_COURAGE:{short:"PW Courage",color:"#0891b2",stateRank:45,rank:1200},
+  FCCH:{short:"FCCH Red",color:"#6b7280",stateRank:55,rank:1400},
+  ALEX_15W:{short:"Alex 15G White",color:"#a78bfa",stateRank:48,rank:1300},
+  LOUD:{short:"Loudoun White",color:"#f59e0b",stateRank:38,rank:950},
+  VSA:{short:"VSA Pre-ECNL II",color:"#06b6d4",stateRank:50,rank:1350},
+  VYS:{short:"VYS Red",color:"#ef4444",stateRank:60,rank:1600}
+};
+
+/* ─────────────────────────────────────────
+   TEAM CONFIGS
+───────────────────────────────────────── */
+const TEAM_CONFIG={
+  RED:{
+    id:"RED", teamKey:"ARL_RED",
+    name:"ARL 2015G RED", color:"#dc2626",
+    sub:"NCSL Division NG11D1 · Coach: I. Zegada-Frias",
+    badges:[
+      {label:"#369 US/CAN",color:"#22c55e",bc:"rgba(34,197,94,.35)"},
+      {label:"#12 Virginia",color:"#dc2626",bc:"rgba(220,38,38,.3)"},
+      {label:"v6 · Mar 2026",color:"var(--text3)",bc:"var(--border)"}
+    ],
+    metrics:{w:8,l:1,winPct:"71%",pts:"24+"},
+    schedule:[
+      {g:1,date:"Apr 11",home:false,opp:"ALEX_16R",win:72,spread:-1.5,ml:-210,ou:3.5,pred:"W",score:"3-1",conf:"Moderate-High",
+       h2h:[],chain:"Pre-Acad beat Alex 16R 2-0. Red beat Pre-Acad 3-0. VISTA drew 2-2 with Alex 16R. Two independent chains favor Red.",
+       notes:"Away opener. No direct H2H but transitive chain is clear. Alex 16R has mixed results vs weaker competition."},
+      {g:2,date:"Apr 12",home:false,opp:"MCLN_W",win:60,spread:-0.5,ml:-148,ou:3.5,pred:"W",score:"2-1",conf:"Low-Moderate",
+       h2h:[{r:"W",s:"2-1",c:"McLean Premier",d:"Mar 2025"}],
+       chain:"Red beat McLean W 2-1 (Mar 2025). McLean beat ARL White 3-1 and 1-0.",
+       notes:"Closest matchup. McLean W ranked #37 VA. Red's prior win was narrow. Back-to-back away games adds fatigue."},
+      {g:3,date:"Apr 18",home:false,opp:"VRSC",win:22,spread:2.0,ml:340,ou:3.0,pred:"L",score:"1-2",conf:"High (loss)",
+       h2h:[{r:"L",s:"1-3",c:"Revolution Cup",d:"Aug 2025"},{r:"L",s:"0-1",c:"NCSL Fall",d:"Sep 2025"}],
+       chain:"VRSC 2-0 all-time vs Red. Red scored in Revolution Cup (1-3) but shut out in NCSL (0-1). VRSC beat VALR 6-0, Alex Red 2-1, Pre-Acad 2-1.",
+       notes:"Only predicted loss. 0-2 all-time, 1 total goal scored — Red can create but cannot contain VRSC. Away at RavenTek."},
+      {g:4,date:"Apr 19",home:true,opp:"VALR",win:92,spread:-3.5,ml:-920,ou:5.0,pred:"W",score:"4-1",conf:"Very High",
+       h2h:[{r:"W",s:"4-1",c:"NCSL Fall",d:"Nov 2025"}],
+       chain:"Red beat VALR 4-1. VRSC beat VALR 6-0. Pre-Acad beat VALR 3-0. Alex Red beat VALR 4-2.",
+       notes:"VALR ranked #1100 US, #29 VA. Home game. Most comfortable win. High scoring expected."},
+      {g:5,date:"Apr 26",home:false,opp:"ALEX_R",win:88,spread:-2.5,ml:-680,ou:4.0,pred:"W",score:"3-0",conf:"High",
+       h2h:[{r:"W",s:"3-1",c:"NCSL Fall",d:"Sep 2025"},{r:"W",s:"3-0",c:"Virginian Elite",d:"May 2025"}],
+       chain:"Red 2-0 all-time, 6 goals scored vs 1 conceded across two competitions.",
+       notes:"Most lopsided result alongside VALR. Red won by 2+ both times."},
+      {g:6,date:"May 3",home:true,opp:"ARL_W",win:85,spread:-2.5,ml:-530,ou:4.0,pred:"W",score:"3-1",conf:"High",
+       h2h:[],chain:"Red #12 VA vs White #51 VA. Red beat McLean W who beat White twice. Massive 39-place state gap.",
+       notes:"Arlington derby. No direct H2H but VA ranking gap (12 vs 51) is enormous. Home field advantage."},
+      {g:7,date:"May 10",home:true,opp:"VISTA",win:68,spread:-1.5,ml:-195,ou:3.5,pred:"W",score:"2-1",conf:"Moderate",
+       h2h:[],chain:"McLean W beat VISTA 1-0; Red beat McLean W 2-1. VISTA drew 0-0 with ARL White. VISTA lost 0-11 to Potomac Premier.",
+       notes:"No direct H2H. VISTA dominant in weaker fall division (45 GF/5 GA) but lost 0-11 to Potomac Premier."},
+      {g:8,date:"May 17",home:false,opp:"PRE_ACAD",win:74,spread:-1.5,ml:-250,ou:3.5,pred:"W",score:"2-0",conf:"Moderate-High",
+       h2h:[{r:"W",s:"3-0",c:"NCSL Fall",d:"Oct 2025"}],
+       chain:"Red beat Pre-Acad 3-0 in fall NCSL. Pre-Acad lost to McLean YS 0-3 and Potomac Premier.",
+       notes:"Away tempers confidence slightly. Red beat them convincingly 3-0 in fall."},
+      {g:9,date:"Jun 6",home:true,opp:"SYC",win:78,spread:-2.0,ml:-320,ou:4.5,pred:"W",score:"3-1",conf:"High",
+       h2h:[],chain:"SYC Pre-GA lost to Pre-Acad 0-2; Red beat Pre-Acad 3-0. SYC lost to Potomac Premier 1-6; Red drew 0-0 with Potomac.",
+       notes:"Originally misforecast as a loss. Corrected by two independent transitive chains. Home game. Season finale."}
+    ]
+  },
+
+  WHITE:{
+    id:"WHITE", teamKey:"ARL_W",
+    name:"ARL 2015G WHITE", color:"#6b7280",
+    sub:"NCSL Division NG11D1 · Coach: T. Williamson",
+    badges:[
+      {label:"#2122 US/CAN",color:"#6b7280",bc:"rgba(107,114,128,.35)"},
+      {label:"#51 Virginia",color:"#6b7280",bc:"rgba(107,114,128,.3)"},
+      {label:"v6 · Mar 2026",color:"var(--text3)",bc:"var(--border)"}
+    ],
+    metrics:{w:4,l:5,winPct:"38%",pts:"~12"},
+    schedule:[
+      {g:1,date:"Apr 11",home:false,opp:"ALEX_16R",win:42,spread:0.5,ml:120,ou:3.0,pred:"L",score:"1-2",conf:"Moderate",
+       h2h:[],chain:"Alex 16R drew 2-2 with VISTA; White drew 0-0 with VISTA. White lost 0-1 to McLean W who is similar level to Alex 16R. Roughly even but Alex 16R has slight edge.",
+       notes:"Away game. White has no direct H2H vs Alex 16R. Both teams in similar tier. Alex 16R playing a year up adds slight concern."},
+      {g:2,date:"Apr 12",home:false,opp:"MCLN_W",win:28,spread:2.0,ml:320,ou:3.0,pred:"L",score:"0-2",conf:"High (loss)",
+       h2h:[{r:"L",s:"1-3",c:"NCSL Fall",d:"Sep 2025"},{r:"L",s:"0-1",c:"ARL Tournament",d:"Mar 2026"}],
+       chain:"White 0-2 all-time vs McLean White. Lost 1-3 and 0-1. McLean White finished 3rd in division Fall 2025 (#37 VA, 458 US).",
+       notes:"Back-to-back away games to open. McLean White has beaten White twice convincingly. Tough road trip."},
+      {g:3,date:"Apr 18",home:false,opp:"VRSC",win:18,spread:2.5,ml:480,ou:2.5,pred:"L",score:"0-3",conf:"Very High (loss)",
+       h2h:[],chain:"VRSC beat ARL Red twice who is ranked 39 places above White in VA. White has no path to VRSC via transitive chains. VRSC ranked #13 VA vs White #51 VA.",
+       notes:"No direct H2H but transitive chains are very unfavorable. VRSC dominant across all opponents in this division. Toughest game of spring."},
+      {g:4,date:"Apr 19",home:true,opp:"VALR",win:72,spread:-1.5,ml:-225,ou:4.0,pred:"W",score:"3-1",conf:"Moderate-High",
+       h2h:[],chain:"White beat Virginia Valor 5-0 (Dulles National Aug 2025). VALR ranked #1100 US, #29 VA vs White #51 VA — ranking gap favors White here.",
+       notes:"Home game vs VALR who is weakest team in division. White beat them 5-0 in August tournament. Best win opportunity of spring."},
+      {g:5,date:"Apr 26",home:false,opp:"ALEX_R",win:55,spread:-0.5,ml:-125,ou:3.5,pred:"W",score:"2-1",conf:"Low-Moderate",
+       h2h:[],chain:"White #51 VA vs Alex Red #20 VA. Alex Red lost twice to ARL Red but White is weaker than Red. Alex Red beat VALR 4-2. Roughly even with slight White underdog position.",
+       notes:"Away game. No direct H2H. Alex Red is ranked higher but White's home division form (23 pts, 7W-0L-2D fall) shows strong defensive ability."},
+      {g:6,date:"May 3",home:false,opp:"ARL_RED",win:15,spread:2.5,ml:530,ou:4.0,pred:"L",score:"1-3",conf:"High (loss)",
+       h2h:[],chain:"Red #12 VA vs White #51 VA. Red beat McLean W who beat White twice. Massive ranking differential. Red beat Pre-Acad 3-0 who beat White's division peers.",
+       notes:"Derby away game. No direct H2H but every transitive chain points to Red. Biggest ranking gap of season."},
+      {g:7,date:"May 10",home:false,opp:"VISTA",win:48,spread:0.5,ml:110,ou:3.0,pred:"L",score:"1-2",conf:"Low",
+       h2h:[{r:"D",s:"0-0",c:"NCSL Fall",d:"Nov 2025"}],chain:"White drew 0-0 with VISTA in fall NCSL. But VISTA beat White 5-0 in Dulles National Aug 2025. VISTA beat Alex 15G White 7-1. Two different results — draw suggests parity, big loss suggests VISTA is better.",
+       notes:"Mixed signals. Drew 0-0 in NCSL but VISTA beat a similar White team 5-0 in August. Away game tips it to slight VISTA edge. Genuinely unpredictable."},
+      {g:8,date:"May 17",home:true,opp:"PRE_ACAD",win:38,spread:1.5,ml:240,ou:3.5,pred:"L",score:"1-2",conf:"Moderate",
+       h2h:[],chain:"Pre-Acad ranked #2 VA (#147 US) vs White #51 VA. Pre-Acad beat VALR 3-0 and Alex Red 4-2. White's form doesn't match Pre-Acad's results vs shared opponents.",
+       notes:"Home game helps but Pre-Acad is significantly ranked higher. Pre-Acad's GotSport rank may be inflated but still a tough matchup."},
+      {g:9,date:"Jun 6",home:false,opp:"SYC",win:35,spread:1.5,ml:260,ou:3.5,pred:"L",score:"1-2",conf:"Moderate",
+       h2h:[],chain:"SYC lost to Pre-Acad 0-2 and Potomac Premier 1-6. White lost to McLean W twice. White drew with VISTA. SYC appears stronger than White via shared opponent analysis.",
+       notes:"Away season finale. SYC Pre-GA plays a year up and despite losses to top teams still appears ahead of White's tier. Tough road game."}
+    ]
+  },
+
+  PREACAD:{
+    id:"PREACAD", teamKey:"PRE_ACAD",
+    name:"ARL 2016G PRE-ACADEMY 1", color:"#f97316",
+    sub:"NCSL Division NG11D1 · Coach: A. Koppius",
+    badges:[
+      {label:"#147 US/CAN",color:"#f97316",bc:"rgba(249,115,22,.35)"},
+      {label:"#2 Virginia",color:"#f97316",bc:"rgba(249,115,22,.3)"},
+      {label:"v6 · Mar 2026",color:"var(--text3)",bc:"var(--border)"}
+    ],
+    metrics:{w:6,l:3,winPct:"58%",pts:"~18"},
+    schedule:[
+      {g:1,date:"Apr 11",home:false,opp:"ALEX_16R",win:65,spread:-1.0,ml:-175,ou:3.5,pred:"W",score:"2-1",conf:"Moderate-High",
+       h2h:[{r:"W",s:"2-0",c:"Virginian Elite",d:"May 2025"}],
+       chain:"Pre-Acad beat Alex 16R 2-0 directly (Virginian Elite May 2025). Most direct data point available.",
+       notes:"Only predicted result with direct H2H data favoring Pre-Acad. Won 2-0 in May 2025 tournament. Alex 16R has improved but Pre-Acad has clear edge."},
+      {g:2,date:"Apr 12",home:false,opp:"MCLN_W",win:40,spread:1.0,ml:175,ou:3.5,pred:"L",score:"1-2",conf:"Moderate",
+       h2h:[{r:"L",s:"0-3",c:"Virginian Elite",d:"May 2025"}],
+       chain:"Pre-Acad lost to McLean YS 0-3 (Virginian Elite). McLean White finished 3rd in NCSL Fall (#37 VA). McLean consistently beats teams at Pre-Acad's level.",
+       notes:"Away game. Pre-Acad lost 0-3 to McLean YS in tournament. Back-to-back away games to open is a tough draw."},
+      {g:3,date:"Apr 18",home:false,opp:"VRSC",win:30,spread:2.0,ml:260,ou:3.0,pred:"L",score:"0-2",conf:"High (loss)",
+       h2h:[{r:"L",s:"1-2",c:"NCSL Fall",d:"Sep 2025"}],
+       chain:"VRSC beat Pre-Acad 2-1 in NCSL Fall. VRSC also beat ARL Red twice. VRSC finished 2nd in fall division. Pre-Acad 0-1 vs VRSC in NCSL.",
+       notes:"Away at RavenTek. Pre-Acad lost to VRSC 1-2 in fall. VRSC one of two teams clearly above Pre-Acad's level."},
+      {g:4,date:"Apr 19",home:true,opp:"VALR",win:88,spread:-3.0,ml:-700,ou:4.5,pred:"W",score:"3-0",conf:"Very High",
+       h2h:[{r:"W",s:"3-0",c:"NCSL Fall",d:"Sep 2025"}],
+       chain:"Pre-Acad beat VALR 3-0 directly in fall NCSL. VALR 0-for-4 vs all teams in this division.",
+       notes:"Home game vs weakest division team. Direct 3-0 win in fall. Very comfortable win expected."},
+      {g:5,date:"Apr 26",home:false,opp:"ALEX_R",win:78,spread:-2.0,ml:-340,ou:4.0,pred:"W",score:"3-1",conf:"High",
+       h2h:[{r:"W",s:"4-2",c:"NCSL Fall",d:"Sep 2025"}],
+       chain:"Pre-Acad beat Alex Red 4-2 in fall NCSL. Alex Red ranked #20 VA vs Pre-Acad #2 VA.",
+       notes:"Away game but convincing 4-2 win in fall. Pre-Acad should handle Alex Red comfortably again."},
+      {g:6,date:"May 3",home:true,opp:"ARL_W",win:62,spread:-1.0,ml:-165,ou:3.5,pred:"W",score:"2-1",conf:"Moderate",
+       h2h:[],chain:"Pre-Acad #2 VA vs ARL White #51 VA. Pre-Acad beat VALR and Alex Red convincingly. White lost to McLean W twice. Large ranking gap favors Pre-Acad.",
+       notes:"Home game. No direct H2H but ranking gap (2 vs 51 VA) is significant. Pre-Acad should win but White's defensive record adds caution."},
+      {g:7,date:"May 10",home:true,opp:"VISTA",win:60,spread:-1.0,ml:-150,ou:3.5,pred:"W",score:"2-1",conf:"Moderate",
+       h2h:[],chain:"Pre-Acad #2 VA vs VISTA #26 VA. McLean W beat VISTA; Pre-Acad lost to McLean W. Chain is slightly unfavorable but ranking difference compensates.",
+       notes:"Home game. No direct H2H. Transitive chain is mixed but Pre-Acad's national ranking (#147 US) is much stronger than VISTA (#878 US)."},
+      {g:8,date:"May 17",home:false,opp:"ARL_RED",win:26,spread:1.5,ml:250,ou:3.5,pred:"L",score:"0-3",conf:"High (loss)",
+       h2h:[{r:"L",s:"0-3",c:"NCSL Fall",d:"Oct 2025"}],
+       chain:"ARL Red beat Pre-Acad 3-0 in fall NCSL. Red ranked #12 VA vs Pre-Acad #2 VA by GotSport but NCSL standings put Red 3rd vs Pre-Acad 5th fall 2025.",
+       notes:"Away game. Pre-Acad lost 0-3 to Red in fall. Red is consistently stronger in NCSL head-to-head. Pre-Acad's GotSport rank may overstate vs this specific opponent."},
+      {g:9,date:"Jun 6",home:true,opp:"SYC",win:55,spread:-0.5,ml:-130,ou:4.0,pred:"W",score:"2-1",conf:"Low-Moderate",
+       h2h:[{r:"W",s:"2-0",c:"Virginian Elite",d:"May 2025"}],
+       chain:"Pre-Acad beat SYC Pre-GA 2-0 in Virginian Elite May 2025. SYC also lost to Potomac Premier 1-6. Pre-Acad drew 0-0 with Potomac Premier (different tournament context).",
+       notes:"Home game. Pre-Acad beat SYC 2-0 directly. Best transitive data point. Home advantage. Cautious confidence given SYC plays up a year."}
+    ]
+  }
+};
+
+/* ─────────────────────────────────────────
+   SHARED EDGES (for network & heatmap)
+───────────────────────────────────────── */
+const ALL_EDGES=[
+  {from:"ARL_RED",to:"VRSC",r:"L"},{from:"ARL_RED",to:"VRSC",r:"L"},
+  {from:"ARL_RED",to:"VALR",r:"W"},{from:"ARL_RED",to:"ALEX_R",r:"W"},
+  {from:"ARL_RED",to:"ALEX_R",r:"W"},{from:"ARL_RED",to:"PRE_ACAD",r:"W"},
+  {from:"ARL_RED",to:"MCLN_W",r:"W"},{from:"ARL_RED",to:"POT_PREM",r:"D"},
+  {from:"ARL_W",to:"MCLN_W",r:"L"},{from:"ARL_W",to:"MCLN_W",r:"L"},
+  {from:"ARL_W",to:"VISTA",r:"D"},{from:"ARL_W",to:"VALR",r:"W"},
+  {from:"ARL_W",to:"VISTA",r:"L"},
+  {from:"PRE_ACAD",to:"VRSC",r:"L"},{from:"PRE_ACAD",to:"VALR",r:"W"},
+  {from:"PRE_ACAD",to:"ALEX_R",r:"W"},{from:"PRE_ACAD",to:"ALEX_16R",r:"W"},
+  {from:"PRE_ACAD",to:"SYC",r:"W"},{from:"PRE_ACAD",to:"ARL_RED",r:"L"},
+  {from:"PRE_ACAD",to:"MCLN_W",r:"L"},
+  {from:"VRSC",to:"VALR",r:"W"},{from:"VRSC",to:"ALEX_R",r:"W"},
+  {from:"VRSC",to:"PRE_ACAD",r:"W"},
+  {from:"ALEX_R",to:"VALR",r:"W"},
+  {from:"MCLN_W",to:"VISTA",r:"W"},
+  {from:"VISTA",to:"ALEX_16R",r:"D"},
+  {from:"POT_PREM",to:"SYC",r:"W"},{from:"POT_PREM",to:"VISTA",r:"W"}
+];
+
+const ALL_RESULTS=[
+  {date:"2025-03-15",home:"ARL_RED",away:"MCLN_W",hg:2,ag:1,comp:"McLean Premier"},
+  {date:"2025-05-25",home:"ALEX_R",away:"ARL_RED",hg:0,ag:3,comp:"Virginian Elite"},
+  {date:"2025-05-25",home:"PRE_ACAD",away:"ALEX_16R",hg:2,ag:0,comp:"Virginian Elite"},
+  {date:"2025-05-25",home:"PRE_ACAD",away:"SYC",hg:2,ag:0,comp:"Virginian Elite"},
+  {date:"2025-05-25",home:"MCLN_W",away:"PRE_ACAD",hg:3,ag:0,comp:"Virginian Elite"},
+  {date:"2025-08-23",home:"VISTA",away:"ARL_W",hg:5,ag:0,comp:"Dulles National"},
+  {date:"2025-08-24",home:"MCLN_W",away:"ARL_W",hg:1,ag:0,comp:"Dulles National"},
+  {date:"2025-08-31",home:"ARL_RED",away:"VRSC",hg:1,ag:3,comp:"Revolution Cup"},
+  {date:"2025-09-06",home:"ALEX_R",away:"PRE_ACAD",hg:2,ag:4,comp:"NCSL Fall"},
+  {date:"2025-09-07",home:"MCLN_W",away:"ARL_W",hg:1,ag:3,comp:"NCSL Fall"},
+  {date:"2025-09-07",home:"PRE_ACAD",away:"VRSC",hg:1,ag:2,comp:"NCSL Fall"},
+  {date:"2025-09-14",home:"ARL_RED",away:"ALEX_R",hg:3,ag:1,comp:"NCSL Fall"},
+  {date:"2025-09-14",home:"VRSC2",away:"VISTA",hg:0,ag:4,comp:"NCSL Fall"},
+  {date:"2025-09-21",home:"ARL_W",away:"VRSC2",hg:3,ag:0,comp:"NCSL Fall"},
+  {date:"2025-09-21",home:"MCLN_W",away:"VISTA",hg:1,ag:0,comp:"NCSL Fall"},
+  {date:"2025-09-21",home:"VRSC",away:"ARL_RED",hg:1,ag:0,comp:"NCSL Fall"},
+  {date:"2025-09-21",home:"VALR",away:"PRE_ACAD",hg:0,ag:3,comp:"NCSL Fall"},
+  {date:"2025-09-28",home:"VALR",away:"VRSC",hg:0,ag:6,comp:"NCSL Fall"},
+  {date:"2025-10-05",home:"ARL_RED",away:"PRE_ACAD",hg:3,ag:0,comp:"NCSL Fall"},
+  {date:"2025-10-05",home:"ALEX_R",away:"VALR",hg:4,ag:2,comp:"NCSL Fall"},
+  {date:"2025-10-11",home:"VISTA",away:"ALEX_16R",hg:2,ag:2,comp:"Heritage Cup"},
+  {date:"2025-10-19",home:"ALEX_R",away:"VRSC",hg:1,ag:2,comp:"NCSL Fall"},
+  {date:"2025-10-19",home:"ARL_W",away:"BRU",hg:2,ag:1,comp:"NCSL Fall"},
+  {date:"2025-10-26",home:"ARL_W",away:"ALEX_15W",hg:4,ag:0,comp:"NCSL Fall"},
+  {date:"2025-11-02",home:"ARL_RED",away:"VALR",hg:4,ag:1,comp:"NCSL Fall"},
+  {date:"2025-11-02",home:"ARL_W",away:"VISTA",hg:0,ag:0,comp:"NCSL Fall"},
+  {date:"2026-03-08",home:"ARL_RED",away:"POT_PREM",hg:0,ag:0,comp:"ARL Tournament"},
+  {date:"2026-03-08",home:"MCLN_W",away:"ARL_W",hg:1,ag:0,comp:"ARL Tournament"},
+  {date:"2026-03-15",home:"POT_PREM",away:"SYC",hg:6,ag:1,comp:"Tournament"}
+];
+
+/* ─────────────────────────────────────────
+   STATE
+───────────────────────────────────────── */
+let currentTeam="RED";
+let currentView="forecast";
+const VIEW_ORDER=['forecast','network','heatmap','bubble','timeline','form'];
+
+function winColor(p){if(p>=80)return"#22c55e";if(p>=65)return"#84cc16";if(p>=50)return"#eab308";if(p>=35)return"#f97316";return"#ef4444"}
+
+function confMeta(conf){
+  const c=(conf||'').toLowerCase();
+  if(c.includes('very high')) return {label:'Very High', color:'#22c55e', dash:false, score:5};
+  if(c.includes('moderate-high') || c.includes('high')) return {label:'High', color:'#84cc16', dash:false, score:4};
+  if(c.includes('moderate')) return {label:'Moderate', color:'#eab308', dash:true, score:3};
+  if(c.includes('low-moderate')) return {label:'Low-Mod', color:'#f97316', dash:true, score:2};
+  if(c.includes('low')) return {label:'Low', color:'#ef4444', dash:true, score:1};
+  return {label:conf||'Unknown', color:'var(--text3)', dash:true, score:2};
+}
+
+function parseScore(score){
+  const m=String(score||'').match(/(\d+)\s*-\s*(\d+)/);
+  if(!m) return null;
+  return {a:parseInt(m[1],10), b:parseInt(m[2],10)};
+}
+
+function getProjectedGamePoints(g){
+  if(g.pred==='W') return 3;
+  if(g.pred==='D') return 1;
+  return 0;
+}
+
+function getDirectRecord(teamKey, oppKey){
+  const games=ALL_RESULTS.filter(r=>
+    (r.home===teamKey && r.away===oppKey) || (r.home===oppKey && r.away===teamKey)
+  );
+  let w=0,l=0,d=0,gf=0,ga=0;
+  games.forEach(r=>{
+    const teamGoals=r.home===teamKey?r.hg:r.ag;
+    const oppGoals=r.home===teamKey?r.ag:r.hg;
+    gf+=teamGoals; ga+=oppGoals;
+    if(teamGoals>oppGoals) w++;
+    else if(teamGoals<oppGoals) l++;
+    else d++;
+  });
+  return {w,l,d,gf,ga,total:games.length};
+}
+
+function getHistoricalTeamMatches(teamKey){
+  return ALL_RESULTS
+    .filter(r=>r.home===teamKey || r.away===teamKey)
+    .sort((a,b)=>a.date.localeCompare(b.date));
+}
+
+function getHistoricalSummary(teamKey){
+  const matches=getHistoricalTeamMatches(teamKey);
+  let pts=0,w=0,l=0,d=0,gf=0,ga=0;
+  matches.forEach(r=>{
+    const tg=r.home===teamKey?r.hg:r.ag;
+    const og=r.home===teamKey?r.ag:r.hg;
+    gf+=tg; ga+=og;
+    if(tg>og){w++;pts+=3;}
+    else if(tg<og){l++;}
+    else{d++;pts+=1;}
+  });
+  return {matches,pts,w,l,d,gf,ga,gd:gf-ga};
+}
+
+function getProjectedSummary(teamId){
+  const sched=TEAM_CONFIG[teamId].schedule;
+  let pts=0,w=0,l=0,d=0,gf=0,ga=0;
+  sched.forEach(g=>{
+    const sc=parseScore(g.score);
+    if(sc){
+      const teamGoals=g.home?sc.a:sc.a;
+      const oppGoals=g.home?sc.b:sc.b;
+      gf+=teamGoals;
+      ga+=oppGoals;
+    }
+    if(g.pred==='W'){w++;pts+=3;}
+    else if(g.pred==='L'){l++;}
+    else{d++;pts+=1;}
+  });
+  return {pts,w,l,d,gf,ga,gd:gf-ga};
+}
+
+/* ─────────────────────────────────────────
+   TEAM SWITCHER
+───────────────────────────────────────── */
+function switchTeam(id){
+  currentTeam=id;
+  const cfg=TEAM_CONFIG[id];
+  document.documentElement.style.setProperty('--accent',cfg.color);
+  document.getElementById('hdr-title').textContent=cfg.name;
+  document.getElementById('hdr-title').style.color=cfg.color;
+  document.getElementById('hdr-arrow').style.color=cfg.color;
+  document.getElementById('hdr-sub').textContent=cfg.sub;
+  document.getElementById('hdr-badges').innerHTML=cfg.badges.map(b=>
+    `<span class="hdr-badge" style="color:${b.color};border-color:${b.bc}">${b.label}</span>`
+  ).join('');
+  refreshView();
+}
+
+function refreshView(){
+  buildMetrics();
+  buildRunway();
+  buildForecastDesktop();
+  buildForecastMobile();
+  buildForm();
+  const v=currentView;
+  if(v==='network')setTimeout(buildNetwork,60);
+  if(v==='heatmap')buildHeatmap();
+  if(v==='bubble')setTimeout(buildBubble,60);
+  if(v==='timeline')buildTimeline();
+  if(v==='form')setTimeout(buildForm,60);
+}
+
+/* ─────────────────────────────────────────
+   METRICS
+───────────────────────────────────────── */
+function buildMetrics(){
+  const cfg=TEAM_CONFIG[currentTeam];
+  const m=cfg.metrics;
+  document.getElementById('metrics-bar').innerHTML=`
+    <div class="metric"><div class="metric-label">Predicted W</div><div class="metric-val" style="color:#22c55e">${m.w}</div></div>
+    <div class="metric"><div class="metric-label">Predicted L</div><div class="metric-val" style="color:var(--red)">${m.l}</div></div>
+    <div class="metric"><div class="metric-label">Avg Win %</div><div class="metric-val" style="color:var(--accent)">${m.winPct}</div></div>
+    <div class="metric"><div class="metric-label">Proj Points</div><div class="metric-val" style="color:var(--yellow)">${m.pts}</div></div>`;
+}
+
+/* ─────────────────────────────────────────
+   RUNWAY
+───────────────────────────────────────── */
+function buildRunway(){
+  const cfg=TEAM_CONFIG[currentTeam];
+  const el=document.getElementById('runway-grid');
+  if(!el) return;
+  el.innerHTML=cfg.schedule.map(g=>{
+    const t=TEAMS[g.opp]||{short:g.opp,color:'#64748b'};
+    const wc=winColor(g.win);
+    const predColor=g.pred==='W'?'#22c55e':g.pred==='L'?'#ef4444':'#eab308';
+    const cm=confMeta(g.conf);
+    return `
+      <div class="runway-card" style="border-left:3px solid ${predColor};${cm.dash?'border-style:dashed':''}">
+        <div class="runway-top">
+          <div>
+            <div class="runway-g">G${g.g}</div>
+            <div class="runway-opp" style="color:${t.color}">${t.short}</div>
+          </div>
+          <div class="runway-pct" style="color:${wc}">${g.win}%</div>
+        </div>
+        <div class="win-bar-wrap"><div class="win-bar" style="width:${g.win}%;background:${wc}"></div></div>
+        <div class="runway-meta">
+          <span>${g.date} · ${g.home?'Home':'Away'}</span>
+          <span class="runway-conf" style="color:${cm.color};border-color:${cm.color}">${cm.label}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ─────────────────────────────────────────
+   DETAIL PANEL HTML
+───────────────────────────────────────── */
+function detailHTML(g){
+  const cfg=TEAM_CONFIG[currentTeam];
+  const myKey=cfg.teamKey;
+  const me=TEAMS[myKey]||{short:cfg.name,rank:'?',stateRank:'?'};
+  const t=TEAMS[g.opp]||{short:g.opp,rank:'?',stateRank:'?'};
+  const cm=confMeta(g.conf);
+  const rec=getDirectRecord(myKey,g.opp);
+  const win=g.win, oppWin=100-g.win;
+  return`<div class="game-detail">
+    <div class="section-label">Matchup snapshot</div>
+    <div class="snap-grid">
+      <div class="snap-card">
+        <div class="snap-label">Venue</div>
+        <div class="snap-val">${g.home?'Home':'Away'}</div>
+      </div>
+      <div class="snap-card">
+        <div class="snap-label">Forecast edge</div>
+        <div class="snap-val" style="color:${winColor(g.win)}">${g.win}%</div>
+      </div>
+      <div class="snap-card">
+        <div class="snap-label">Confidence</div>
+        <div class="snap-val" style="color:${cm.color}">${cm.label}</div>
+      </div>
+      <div class="snap-card">
+        <div class="snap-label">Direct H2H</div>
+        <div class="snap-val">${rec.total?`${rec.w}-${rec.l}${rec.d?'-'+rec.d:''}`:'None'}</div>
+      </div>
+    </div>
+
+    <div class="compare-bar-wrap">
+      <div class="compare-head">
+        <div class="compare-name" style="color:${me.color||'var(--accent)'}">${me.short||cfg.name}</div>
+        <div class="compare-center">Edge</div>
+        <div class="compare-name" style="color:${t.color}">${t.short}</div>
+      </div>
+      <div class="compare-bar">
+        <div class="compare-fill-left" style="background:${t.color};width:${Math.max(0,(oppWin/100)*50)}%"></div>
+        <div class="compare-fill-right" style="background:${me.color||'var(--accent)'};width:${Math.max(0,(win/100)*50)}%"></div>
+      </div>
+      <div class="compare-scale">
+        <span>${t.short} ${oppWin}%</span>
+        <span>${me.short||cfg.name} ${win}%</span>
+      </div>
+    </div>
+
+    <div class="detail-grid" style="margin-top:12px">
+      <div>
+        <div class="section-label">Prior head-to-head</div>
+        ${g.h2h.length===0?'<div style="color:var(--text3)">No prior direct results</div>':g.h2h.map(h=>`<div style="display:flex;gap:8px;align-items:center;margin-bottom:5px;flex-wrap:wrap"><span class="badge" style="color:${h.r==='W'?'#22c55e':h.r==='L'?'#ef4444':'#eab308'};border-color:${h.r==='W'?'#22c55e':h.r==='L'?'#ef4444':'#eab308'}">${h.r}</span><span style="font-weight:700">${h.s}</span><span style="color:var(--text3);font-size:10px">${h.c} · ${h.d}</span></div>`).join('')}
+      </div>
+      <div>
+        <div class="section-label">Analysis</div>
+        <div style="color:var(--text2);line-height:1.7;font-size:11px">${g.notes}</div>
+      </div>
+    </div>
+    <div style="padding-top:10px;border-top:0.5px solid var(--border)">
+      <div class="section-label">Transitive chain</div>
+      <div style="color:var(--text3);font-style:italic;line-height:1.7;font-size:11px">${g.chain}</div>
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span class="badge" style="color:${cm.color};border-color:${cm.color}">Confidence: ${g.conf}</span>
+      <span style="font-size:9px;color:var(--text3)">${t.short} — #${t.rank} US · #${t.stateRank} VA</span>
+      <span style="font-size:9px;color:var(--text3)">${me.short||cfg.name} — #${me.rank} US · #${me.stateRank} VA</span>
+    </div>
+  </div>`;
+}
+
+/* ─────────────────────────────────────────
+   FORECAST — DESKTOP
+───────────────────────────────────────── */
+function buildForecastDesktop(){
+  const cfg=TEAM_CONFIG[currentTeam];
+  const el=document.getElementById('forecast-desktop-list');
+  let html='';
+  cfg.schedule.forEach(g=>{
+    const t=TEAMS[g.opp]||{short:g.opp,color:'#64748b'};
+    const wc=winColor(g.win),pc=g.pred==='W'?'#22c55e':'#ef4444';
+    const ml=g.ml>0?'+'+g.ml:String(g.ml),sp=g.spread>0?'+'+g.spread:String(g.spread);
+    html+=`<div class="game-row-d" style="border-left:3px solid ${pc}" onclick="toggleDetail('dd-${g.g}')">
+      <div style="font-size:15px;font-weight:700;color:var(--accent)">${g.g}</div>
+      <div style="font-size:9px;color:var(--text3)">${g.date}</div>
+      <div><span style="font-weight:700;color:${t.color}">${t.short}</span><span style="font-size:9px;color:var(--text3);margin-left:5px">${g.home?'Home':'Away'}</span></div>
+      <div><div style="font-size:13px;font-weight:700;color:${wc}">${g.win}%</div><div class="win-bar-wrap"><div class="win-bar" style="width:${g.win}%;background:${wc}"></div></div></div>
+      <div style="font-weight:700;color:${g.spread<=0?'#22c55e':'#f97316'}">${sp}</div>
+      <div style="font-size:13px;font-weight:700;color:${g.ml<0?'#22c55e':'#f97316'}">${ml}</div>
+      <div style="font-weight:700">${g.ou}</div>
+      <div><span class="badge" style="color:${pc};border-color:${pc}">${g.pred}</span></div>
+      <div style="font-weight:700">${g.score}</div>
+    </div>
+    <div id="dd-${g.g}" style="display:none">${detailHTML(g)}</div>`;
+  });
+  el.innerHTML=html;
+}
+
+/* ─────────────────────────────────────────
+   FORECAST — MOBILE CARDS
+───────────────────────────────────────── */
+function buildForecastMobile(){
+  const cfg=TEAM_CONFIG[currentTeam];
+  const el=document.getElementById('forecast-mobile-list');
+  let html='';
+  cfg.schedule.forEach(g=>{
+    const t=TEAMS[g.opp]||{short:g.opp,color:'#64748b'};
+    const wc=winColor(g.win),pc=g.pred==='W'?'#22c55e':'#ef4444';
+    const ml=g.ml>0?'+'+g.ml:String(g.ml),sp=g.spread>0?'+'+g.spread:String(g.spread);
+    html+=`<div class="game-card" style="border-left:4px solid ${pc}" onclick="toggleDetail('dm-${g.g}')">
+      <div class="card-header">
+        <div class="card-num">${g.g}</div>
+        <div class="card-opp-block">
+          <div class="card-opp" style="color:${t.color}">${t.short}</div>
+          <div class="card-meta">
+            <span class="card-date">${g.date}</span>
+            <span class="card-venue">${g.home?'Home':'Away'}</span>
+          </div>
+        </div>
+        <div class="card-pct-block">
+          <div class="card-pct" style="color:${wc}">${g.win}%</div>
+          <div class="win-bar-wrap" style="width:56px;margin-left:auto;margin-top:4px"><div class="win-bar" style="width:${g.win}%;background:${wc}"></div></div>
+        </div>
+      </div>
+      <div class="card-stats">
+        <div class="stat-cell"><div class="stat-label">Spread</div><div class="stat-val" style="color:${g.spread<=0?'#22c55e':'#f97316'}">${sp}</div></div>
+        <div class="stat-cell"><div class="stat-label">Moneyline</div><div class="stat-val" style="color:${g.ml<0?'#22c55e':'#f97316'}">${ml}</div></div>
+        <div class="stat-cell"><div class="stat-label">O/U</div><div class="stat-val">${g.ou}</div></div>
+      </div>
+      <div class="card-footer">
+        <div><div class="card-score-label">Predicted</div><div class="card-score">${g.score}</div></div>
+        <span class="card-pick" style="color:${pc};border-color:${pc}">${g.pred==='W'?'WIN':'LOSS'}</span>
+      </div>
+    </div>
+    <div id="dm-${g.g}" style="display:none">${detailHTML(g)}</div>`;
+  });
+  el.innerHTML=html;
+}
+
+function toggleDetail(id){
+  const el=document.getElementById(id);
+  if(el) el.style.display=el.style.display==='block'?'none':'block';
+}
+
+/* ─────────────────────────────────────────
+   NETWORK
+───────────────────────────────────────── */
+function buildNetwork(){
+  const cfg=TEAM_CONFIG[currentTeam];
+  const myKey=cfg.teamKey;
+  const canvas=document.getElementById('netCanvas');if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.parentElement.clientWidth||700;
+  const H=Math.max(260,Math.min(420,W*0.55));
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.scale(dpr,dpr);
+
+  const oppKeys=cfg.schedule.map(g=>g.opp);
+  const nodeKeys=[...new Set([myKey,'VRSC','MCLN_W','VALR','ALEX_R','ARL_W','PRE_ACAD','VISTA','SYC','ALEX_16R','POT_PREM',...oppKeys])];
+
+  const nodes={};
+  const cx=W*0.5,cy=H*0.45,r2=Math.min(W,H)*0.36;
+  nodes[myKey]={x:cx,y:cy};
+  const others=nodeKeys.filter(k=>k!==myKey);
+  others.forEach((k,i)=>{
+    const ang=(i/others.length)*Math.PI*2-Math.PI/2;
+    nodes[k]={x:cx+r2*Math.cos(ang),y:cy+r2*Math.sin(ang)};
+  });
+
+  const edges=ALL_EDGES.filter(e=>nodes[e.from]&&nodes[e.to]);
+
+  edges.forEach(e=>{
+    const f=nodes[e.from],t=nodes[e.to];if(!f||!t)return;
+    ctx.beginPath();ctx.moveTo(f.x,f.y);ctx.lineTo(t.x,t.y);
+    ctx.strokeStyle=e.r==='W'?'rgba(34,197,94,.45)':e.r==='L'?'rgba(239,68,68,.45)':'rgba(234,179,8,.45)';
+    ctx.lineWidth=1.5;ctx.setLineDash(e.r==='D'?[4,4]:[]);ctx.stroke();ctx.setLineDash([]);
+    const ax=(f.x+t.x)/2,ay=(f.y+t.y)/2,ang=Math.atan2(t.y-f.y,t.x-f.x);
+    ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(ax-7*Math.cos(ang-.4),ay-7*Math.sin(ang-.4));ctx.lineTo(ax-7*Math.cos(ang+.4),ay-7*Math.sin(ang+.4));ctx.closePath();
+    ctx.fillStyle=e.r==='W'?'rgba(34,197,94,.7)':e.r==='L'?'rgba(239,68,68,.7)':'rgba(234,179,8,.7)';
+    ctx.fill();
+  });
+
+  Object.entries(nodes).forEach(([k,n])=>{
+    const t=TEAMS[k];if(!t)return;
+    const isMain=k===myKey,r=isMain?30:18;
+    ctx.beginPath();ctx.arc(n.x,n.y,r,0,Math.PI*2);ctx.fillStyle=t.color+(isMain?'ee':'88');ctx.fill();
+    ctx.strokeStyle=isMain?t.color:t.color+'55';ctx.lineWidth=isMain?2.5:1;ctx.stroke();
+    ctx.fillStyle='#fff';ctx.font=`${isMain?9:7.5}px 'Courier New'`;ctx.textAlign='center';ctx.textBaseline='middle';
+    const words=t.short.split(' ');
+    if(words.length>1){ctx.fillText(words[0],n.x,n.y-4.5);ctx.fillText(words.slice(1).join(' '),n.x,n.y+5);}
+    else ctx.fillText(t.short,n.x,n.y);
+    ctx.beginPath();ctx.arc(n.x+r*.72,n.y-r*.72,8,0,Math.PI*2);ctx.fillStyle='#0a0f1a';ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 6.5px Courier New';ctx.fillText('#'+t.stateRank,n.x+r*.72,n.y-r*.72);
+  });
+
+  document.getElementById('net-team-grid').innerHTML=nodeKeys.map(k=>{
+    const t=TEAMS[k];if(!t)return'';
+    return`<div class="net-card"><div style="font-size:9px;font-weight:700;color:${t.color}">${t.short}</div><div style="font-size:8px;color:var(--text3);margin-top:2px">#${t.rank} US · #${t.stateRank} VA</div></div>`;
+  }).join('');
+}
+
+/* ─────────────────────────────────────────
+   HEATMAP
+───────────────────────────────────────── */
+function buildHeatmap(){
+  const cfg=TEAM_CONFIG[currentTeam];
+  const myKey=cfg.teamKey;
+  const keys=[myKey,...cfg.schedule.map(g=>g.opp).filter((v,i,a)=>a.indexOf(v)===i)];
+  const sh={};keys.forEach(k=>{sh[k]=(TEAMS[k]?.short||k).slice(0,6)});
+
+  function getH2H(from,to){
+    const es=ALL_EDGES.filter(e=>(e.from===from&&e.to===to)||(e.from===to&&e.to===from));
+    if(!es.length)return null;
+    const w=es.filter(e=>e.from===from&&e.r==='W').length;
+    const l=es.filter(e=>(e.from===from&&e.r==='L')||(e.to===from&&e.r==='W')).length;
+    const d=es.filter(e=>e.r==='D').length;
+    return{w,l,d};
+  }
+
+  let html='<tr><th style="text-align:left;min-width:48px;padding:4px 6px">vs →</th>';
+  keys.forEach(k=>{html+=`<th style="min-width:40px"><div style="writing-mode:vertical-lr;transform:rotate(180deg);font-size:8px;color:${TEAMS[k]?.color||'#64748b'};font-weight:700;padding:2px 0">${sh[k]}</div></th>`;});
+  html+='</tr>';
+
+  keys.forEach(row=>{
+    html+=`<tr><td style="font-size:9px;color:${TEAMS[row]?.color||'#64748b'};font-weight:${row===myKey?'700':'400'};padding:4px 6px;white-space:nowrap">${sh[row]}</td>`;
+    keys.forEach(col=>{
+      if(row===col){html+=`<td style="background:var(--bg3)"><div style="font-size:8px;color:var(--text3)">—</div></td>`;return;}
+      const h=getH2H(row,col);
+      if(!h){html+=`<td><div style="font-size:9px;color:var(--border2)">·</div></td>`;return;}
+      const tot=h.w+h.l+h.d,pct=tot>0?h.w/tot:0.5;
+      const bg=h.w>h.l?`rgba(34,197,94,${(.1+pct*.4).toFixed(2)})`:h.l>h.w?`rgba(239,68,68,${(.1+(1-pct)*.4).toFixed(2)})`:`rgba(234,179,8,.2)`;
+      const fc=h.w>h.l?'#16a34a':h.l>h.w?'#dc2626':'#ca8a04';
+      html+=`<td style="background:${bg}"><div style="font-size:10px;font-weight:700;color:${fc}">${h.w}-${h.l}${h.d>0?'-'+h.d:''}</div></td>`;
+    });
+    html+='</tr>';
+  });
+
+  document.getElementById('hm-table').innerHTML=html;
+  document.getElementById('prob-label').textContent=`${cfg.name.split(' ').slice(0,3).join(' ')} win probability by opponent`;
+
+  let barsHtml='';
+  cfg.schedule.forEach(g=>{
+    const t=TEAMS[g.opp]||{short:g.opp,color:'#64748b'};
+    const barW=Math.round(Math.abs(g.win-50)*1.5);
+    barsHtml+=`<div class="bar-row"><div style="width:72px;text-align:right;color:${t.color};font-weight:700;font-size:10px;flex-shrink:0">${t.short}</div><div style="flex:1;display:flex;align-items:center;height:20px;min-width:0"><div style="flex:1;display:flex;justify-content:flex-end">${g.pred==='L'?`<div style="width:${barW}px;height:16px;background:rgba(239,68,68,.35);border:0.5px solid #ef4444;border-radius:2px 0 0 2px"></div>`:''}</div><div style="width:1px;height:22px;background:var(--border2);flex-shrink:0"></div><div style="flex:1">${g.pred==='W'?`<div style="width:${barW}px;height:16px;background:rgba(34,197,94,.35);border:0.5px solid #22c55e;border-radius:0 2px 2px 0"></div>`:''}</div></div><div style="width:42px;font-size:11px;font-weight:700;color:${g.pred==='W'?'#22c55e':'#ef4444'};flex-shrink:0">${g.win}%</div></div>`;
+  });
+  document.getElementById('prob-bars').innerHTML=barsHtml;
+}
+
+/* ─────────────────────────────────────────
+   BUBBLE
+───────────────────────────────────────── */
+function buildBubble(){
+  const cfg=TEAM_CONFIG[currentTeam];
+  const myKey=cfg.teamKey;
+  const bubbles=[
+    {t:"VRSC",x:83,y:76,r:50,color:"#f59e0b",pts:20,rank:413,key:"VRSC"},
+    {t:"SYC Pre-GA",x:55,y:52,r:34,color:"#ec4899",pts:null,rank:180,key:"SYC"},
+    {t:"McLean W",x:54,y:66,r:43,color:"#3b82f6",pts:20,rank:458,key:"MCLN_W"},
+    {t:"Pre-Acad 1",x:69,y:49,r:37,color:"#f97316",pts:14,rank:147,key:"PRE_ACAD"},
+    {t:"VISTA",x:73,y:71,r:41,color:"#10b981",pts:22,rank:878,key:"VISTA"},
+    {t:"Alex 16R",x:44,y:43,r:27,color:"#14b8a6",pts:null,rank:201,key:"ALEX_16R"},
+    {t:"Alex Red",x:36,y:40,r:25,color:"#7c3aed",pts:13,rank:664,key:"ALEX_R"},
+    {t:"VALR Gold",x:17,y:21,r:19,color:"#eab308",pts:9,rank:1100,key:"VALR"},
+    {t:"ARL White",x:28,y:28,r:21,color:"#6b7280",pts:23,rank:2122,key:"ARL_W"},
+    {t:"Potomac P",x:78,y:88,r:32,color:"#8b5cf6",pts:null,rank:160,key:"POT_PREM"},
+    {t:"ARL Red",x:64,y:63,r:48,color:"#dc2626",pts:18,rank:369,key:"ARL_RED"}
+  ];
+  const wrap=document.getElementById('bubble-wrap');
+  wrap.querySelectorAll('.bubble').forEach(e=>e.remove());
+  const H=wrap.offsetHeight||360,scale=Math.max(0.6,H/380);
+  bubbles.forEach(b=>{
+    const isMain=b.key===myKey;
+    const r=Math.round(b.r*scale);
+    const el=document.createElement('div');
+    el.className='bubble';
+    el.style.cssText=`left:calc(${b.x}% - ${r}px);top:calc(${100-b.y}% - ${r}px);width:${r*2}px;height:${r*2}px;background:${b.color}${isMain?'ee':'55'};border-color:${b.color};border-width:${isMain?3:1.5}px;`;
+    el.innerHTML=`<div class="bubble-label" style="font-size:${Math.max(8,Math.round(r/4))}px">${b.t.split(' ').join('<br>')}</div>${b.pts!==null?`<div style="font-size:7px;opacity:.75;color:#fff;margin-top:1px">${b.pts}pts</div>`:''}`;
+    wrap.appendChild(el);
+  });
+  document.getElementById('bubble-legend').innerHTML=bubbles.map(b=>`<div style="padding:6px 8px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius)${b.key===myKey?';border-color:'+b.color:''}"><div style="font-size:9px;font-weight:700;color:${b.color}">${b.t}</div><div style="font-size:8px;color:var(--text3);margin-top:2px">#${b.rank} US${b.pts!==null?' · '+b.pts+'pts':''}</div></div>`).join('');
+}
+
+/* ─────────────────────────────────────────
+   TIMELINE
+───────────────────────────────────────── */
+function buildTimeline(){
+  const cfg=TEAM_CONFIG[currentTeam];
+  const myKey=cfg.teamKey;
+  const oppKeys=new Set(cfg.schedule.map(g=>g.opp));
+  oppKeys.add(myKey);
+  const keep=[...oppKeys,'POT_PREM'];
+
+  const confirmed=ALL_RESULTS.filter(r=>keep.includes(r.home)&&keep.includes(r.away));
+  const mNums={"Apr":"04","May":"05","Jun":"06"};
+  const predicted=cfg.schedule.map(g=>{
+    const parts=g.date.split(' '),mm=mNums[parts[0]]||'04',dd=parts[1].padStart(2,'0');
+    return{
+      date:`2026-${mm}-${dd}`,
+      home:g.home?myKey:g.opp,
+      away:g.home?g.opp:myKey,
+      hg:null,ag:null,comp:"NCSL Spring 2026",pred:true,predScore:g.score,winPct:g.win,predResult:g.pred
+    };
+  });
+  const all=[...confirmed,...predicted].sort((a,b)=>a.date.localeCompare(b.date));
+  const tn=id=>TEAMS[id]?.short||id,tc=id=>TEAMS[id]?.color||'var(--text2)';
+  let prevMonth='',html='<div class="tl-spine"></div>';
+
+  all.forEach(evt=>{
+    const month=evt.date.slice(0,7);
+    if(month!==prevMonth){
+      try{html+=`<div class="tl-month">${new Date(month+'-02').toLocaleDateString('en-US',{month:'long',year:'numeric'})}</div>`;}
+      catch(e){html+=`<div class="tl-month">${month}</div>`;}
+      prevMonth=month;
+    }
+    const isMain=evt.home===myKey||evt.away===myKey,mainHome=evt.home===myKey;
+    const mainG=mainHome?evt.hg:evt.ag,oppG=mainHome?evt.ag:evt.hg;
+    const mainWon=mainG!==null&&mainG>oppG,mainLost=mainG!==null&&mainG<oppG;
+    const dc=evt.pred?'var(--text3)':isMain?(mainWon?'#22c55e':mainLost?'#ef4444':'#eab308'):'var(--border2)';
+    const bc=isMain?(evt.pred?'var(--border2)':mainWon?'#22c55e':mainLost?'#ef4444':'#eab308'):'var(--border)';
+    html+=`<div style="position:relative;margin-bottom:6px"><div class="tl-dot" style="top:10px;border-color:${dc};background:${dc}44"></div><div class="tl-item" style="border-left:2.5px solid ${bc};${evt.pred?'opacity:.78':''}"><div class="tl-inner"><div style="font-size:11px"><span style="font-weight:700;color:${tc(evt.home)}">${tn(evt.home)}</span><span class="tl-score">${evt.pred?`? — ? → ${evt.predScore}`:`${evt.hg} — ${evt.ag}`}</span><span style="font-weight:700;color:${tc(evt.away)}">${tn(evt.away)}</span></div><div class="tl-meta">${evt.pred&&isMain?`<span class="badge" style="color:${evt.predResult==='W'?'#22c55e':'#ef4444'};border-color:${evt.predResult==='W'?'#22c55e':'#ef4444'};font-size:8px">${evt.winPct}%</span>`:''} ${evt.pred?'<span style="font-size:9px;color:var(--text3);font-style:italic">forecast</span>':''}<span style="font-size:8px;color:var(--text3)">${evt.comp}</span></div></div></div></div>`;
+  });
+  document.getElementById('tl-list').innerHTML=html;
+}
+
+/* ─────────────────────────────────────────
+   FORM CURVE
+───────────────────────────────────────── */
+function buildForm(){
+  const cfg=TEAM_CONFIG[currentTeam];
+  const myKey=cfg.teamKey;
+  const hist=getHistoricalSummary(myKey);
+  const proj=getProjectedSummary(currentTeam);
+
+  const formMetrics=document.getElementById('form-metrics');
+  if(formMetrics){
+    formMetrics.innerHTML=`
+      <div class="form-metric"><div class="metric-label">Actual Record</div><div class="metric-val" style="font-size:20px">${hist.w}-${hist.l}${hist.d?'-'+hist.d:''}</div></div>
+      <div class="form-metric"><div class="metric-label">Actual Pts</div><div class="metric-val" style="font-size:20px;color:#3b82f6">${hist.pts}</div></div>
+      <div class="form-metric"><div class="metric-label">Projected Add</div><div class="metric-val" style="font-size:20px;color:var(--accent)">${proj.pts}</div></div>
+      <div class="form-metric"><div class="metric-label">Projected Final</div><div class="metric-val" style="font-size:20px;color:var(--yellow)">${hist.pts + proj.pts}</div></div>
+    `;
+  }
+
+  const canvas=document.getElementById('formCanvas');
+  if(!canvas) return;
+  const wrap=canvas.parentElement;
+  const dpr=window.devicePixelRatio||1;
+  const W=wrap.clientWidth-20;
+  const H=Math.max(260,Math.min(360,W*0.45));
+  canvas.width=W*dpr;
+  canvas.height=H*dpr;
+  canvas.style.width=W+'px';
+  canvas.style.height=H+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.scale(dpr,dpr);
+
+  const actualMatches=getHistoricalTeamMatches(myKey);
+  const actualPts=[0];
+  let running=0;
+  actualMatches.forEach(r=>{
+    const tg=r.home===myKey?r.hg:r.ag;
+    const og=r.home===myKey?r.ag:r.hg;
+    if(tg>og) running+=3;
+    else if(tg===og) running+=1;
+    actualPts.push(running);
+  });
+
+  const projectedPts=[running];
+  cfg.schedule.forEach(g=>{
+    running+=getProjectedGamePoints(g);
+    projectedPts.push(running);
+  });
+
+  const totalPts=[...actualPts,...projectedPts.slice(1)];
+  const maxY=Math.max(3,...totalPts)+1;
+  const totalSteps=actualPts.length + projectedPts.length - 1;
+
+  const pad={l:34,r:14,t:14,b:30};
+  const innerW=W-pad.l-pad.r;
+  const innerH=H-pad.t-pad.b;
+
+  function x(step){
+    if(totalSteps<=1) return pad.l;
+    return pad.l + (step/(totalSteps-1))*innerW;
+  }
+  function y(val){
+    return pad.t + innerH - (val/maxY)*innerH;
+  }
+
+  ctx.clearRect(0,0,W,H);
+
+  for(let i=0;i<=maxY;i+=3){
+    const yy=y(i);
+    ctx.beginPath();
+    ctx.moveTo(pad.l,yy);
+    ctx.lineTo(W-pad.r,yy);
+    ctx.strokeStyle='rgba(148,163,184,.12)';
+    ctx.lineWidth=1;
+    ctx.stroke();
+
+    ctx.fillStyle='var(--text3)';
+    ctx.font="9px 'Courier New'";
+    ctx.textAlign='right';
+    ctx.textBaseline='middle';
+    ctx.fillText(String(i),pad.l-6,yy);
+  }
+
+  const dividerX=x(actualPts.length-1);
+  ctx.beginPath();
+  ctx.moveTo(dividerX,pad.t);
+  ctx.lineTo(dividerX,H-pad.b);
+  ctx.strokeStyle='rgba(148,163,184,.35)';
+  ctx.setLineDash([4,4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle='var(--text3)';
+  ctx.font="8px 'Courier New'";
+  ctx.textAlign='center';
+  ctx.fillText('NOW',dividerX,pad.t-4);
+
+  ctx.beginPath();
+  actualPts.forEach((v,i)=>{
+    const xx=x(i),yy=y(v);
+    if(i===0) ctx.moveTo(xx,yy);
+    else ctx.lineTo(xx,yy);
+  });
+  ctx.strokeStyle='#3b82f6';
+  ctx.lineWidth=2.25;
+  ctx.stroke();
+
+  ctx.beginPath();
+  projectedPts.forEach((v,i)=>{
+    const xx=x((actualPts.length-1)+i),yy=y(v);
+    if(i===0) ctx.moveTo(xx,yy);
+    else ctx.lineTo(xx,yy);
+  });
+  ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#dc2626';
+  ctx.lineWidth=2.25;
+  ctx.setLineDash([6,4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  actualPts.forEach((v,i)=>{
+    const xx=x(i),yy=y(v);
+    ctx.beginPath();
+    ctx.arc(xx,yy,3,0,Math.PI*2);
+    ctx.fillStyle='#3b82f6';
+    ctx.fill();
+  });
+
+  projectedPts.forEach((v,i)=>{
+    const xx=x((actualPts.length-1)+i),yy=y(v);
+    ctx.beginPath();
+    ctx.arc(xx,yy,3,0,Math.PI*2);
+    ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#dc2626';
+    ctx.fill();
+  });
+
+  ctx.fillStyle='var(--text3)';
+  ctx.font="9px 'Courier New'";
+  ctx.textAlign='center';
+  ctx.textBaseline='top';
+  ctx.fillText('Historical matches', pad.l + innerW*0.22, H-pad.b+8);
+  ctx.fillText('Projected spring schedule', pad.l + innerW*0.77, H-pad.b+8);
+}
+
+/* ─────────────────────────────────────────
+   VIEW SWITCHER
+───────────────────────────────────────── */
+function showView(v){
+  currentView=v;
+  VIEW_ORDER.forEach(id=>{
+    const node=document.getElementById('view-'+id);
+    if(node) node.style.display=id===v?'block':'none';
+  });
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    t.classList.toggle('active',VIEW_ORDER[i]===v);
+  });
+  if(v==='network')setTimeout(buildNetwork,60);
+  if(v==='heatmap')buildHeatmap();
+  if(v==='bubble')setTimeout(buildBubble,60);
+  if(v==='timeline')buildTimeline();
+  if(v==='form')setTimeout(buildForm,60);
+}
+
+/* ─────────────────────────────────────────
+   INIT
+───────────────────────────────────────── */
+buildMetrics();
+buildRunway();
+buildForecastDesktop();
+buildForecastMobile();
+buildForm();
+
+let resizeTimer;
+window.addEventListener('resize',()=>{
+  clearTimeout(resizeTimer);
+  resizeTimer=setTimeout(()=>{
+    if(currentView==='network') buildNetwork();
+    if(currentView==='bubble') buildBubble();
+    if(currentView==='form') buildForm();
+  },200);
+});
+</script>
+</body>
+</html>
