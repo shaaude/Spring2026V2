@@ -159,7 +159,7 @@
     <div class="hdr-badges" id="hdr-badges">
       <span class="hdr-badge" style="color:#22c55e;border-color:rgba(34,197,94,.35)">#369 US/CAN</span>
       <span class="hdr-badge" style="color:#dc2626;border-color:rgba(220,38,38,.3)">#12 Virginia</span>
-      <span class="hdr-badge" style="color:var(--text3);border-color:var(--border)">v11 · Apr 2026</span>
+      <span class="hdr-badge" style="color:var(--text3);border-color:var(--border)">v14 · Apr 2026</span>
     </div>
   </div>
 
@@ -170,6 +170,7 @@
     <button class="tab" onclick="showView('bubble')">Strength Bubble</button>
     <button class="tab" onclick="showView('timeline')">Timeline</button>
     <button class="tab" onclick="showView('standings')">Standings</button>
+    <button class="tab" onclick="showView('elo')">Elo Ratings</button>
   </div>
 
   <div id="view-forecast">
@@ -235,6 +236,17 @@
     </div>
   </div>
 
+  <div id="view-elo" style="display:none">
+    <div style="font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:8px;text-align:center">Elo ratings computed from all known results · K=50 provisional (first 10 games), K=32 thereafter · MoV multiplier applied</div>
+    <div style="font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:14px;text-align:center">Bootstrap from GotSport VA state rank · Higher = stronger · ARL teams highlighted</div>
+    <div id="elo-bars" style="margin-bottom:24px"></div>
+    <div id="elo-table" style="overflow-x:auto"></div>
+    <div style="margin-top:20px">
+      <div class="section-label">What Elo tells us that GotSport doesn't</div>
+      <div id="elo-insights" style="font-size:11px;color:var(--text2);line-height:1.8"></div>
+    </div>
+  </div>
+
   <div class="footer">
     ARLINGTON SOCCER ASSOCIATION · SPRING 2026 COMPETITIVE INTELLIGENCE<br>
     Data: NCSL Fall 2025 · NCSL Spring 2026 (Apr 11) · GotSport Tournament History · Transitive Inference Model<br>
@@ -292,7 +304,10 @@ const METRIC_HISTORY={
     {ver:"v8",date:"Apr 12", trigger:"G1 PLAYED: Red beat SYC 4-0 (Mar 21 NCSL Spring)",w:8,d:0,l:1,winPct:74,pts:24,gf:27,ga:11},
     {ver:"v9",date:"Apr 12", trigger:"Schedule restructure: ALEX_16R dropped, new game order; White drew VRSC 1-1",w:8,d:0,l:1,winPct:74,pts:24,gf:27,ga:11},
     {ver:"v10",date:"Apr 12",trigger:"VISTA beat ALEX_R 2-1 (NCSL Spring); Red G8 win% 76%→74% via shared opponent margin",w:8,d:0,l:1,winPct:73,pts:24,gf:27,ga:11},
-    {ver:"v11",date:"Apr 13",trigger:"Full schedule PDF confirmed; ALEX_16R beat VALR 1-0; Red G6 win% 72%→68%",w:8,d:0,l:1,winPct:72,pts:24,gf:27,ga:11}
+    {ver:"v11",date:"Apr 13",trigger:"Full schedule PDF confirmed; ALEX_16R beat VALR 1-0; Red G6 win% 72%→68%",w:8,d:0,l:1,winPct:72,pts:24,gf:27,ga:11},
+    {ver:"v12",date:"Apr 19",trigger:"3 new results: Pre-Acad beat McLean W 3-1, White beat SYC 5-2, Red beat VRSC 2-0 — all Spring upsets",w:9,d:0,l:0,winPct:83,pts:27,gf:30,ga:8},
+    {ver:"v13",date:"Apr 20",trigger:"Full JSON confirmed: Pre-Acad drew McLean W→corrected to W 3-1; 4 new Apr 19 results added",w:9,d:0,l:0,winPct:83,pts:27,gf:30,ga:8},
+    {ver:"v14",date:"Apr 20",trigger:"G3 PLAYED: Red beat VALR 2-1 (Apr 19); W/D/L display fixed; all transitive chains updated",w:9,d:0,l:0,winPct:83,pts:27,gf:30,ga:8}
   ],
   WHITE:[
     {ver:"v1",date:"Mar 1",  trigger:"Initial build",                                   w:3,d:0,l:6,winPct:32,pts:9, gf:10,ga:18},
@@ -305,7 +320,10 @@ const METRIC_HISTORY={
     {ver:"v8",date:"Apr 12", trigger:"SYC chain updated via Red's 4-0 result; White G9 win% → 28%", w:4,d:0,l:5,winPct:38,pts:12,gf:13,ga:18},
     {ver:"v9",date:"Apr 12", trigger:"G2 PLAYED: White drew VRSC 1-1 (massive upset); schedule restructure",w:1,d:1,l:6,winPct:40,pts:7,gf:13,ga:17},
     {ver:"v10",date:"Apr 12",trigger:"VISTA beat ALEX_R 2-1; White G4 win% 55%→57% via VISTA transitive path",w:1,d:1,l:6,winPct:41,pts:7,gf:13,ga:17},
-    {ver:"v11",date:"Apr 13",trigger:"Full schedule PDF confirmed; ALEX_16R beat VALR 1-0; White G5 tightened to near-even",w:1,d:1,l:6,winPct:41,pts:7,gf:13,ga:17}
+    {ver:"v11",date:"Apr 13",trigger:"Full schedule PDF confirmed; ALEX_16R beat VALR 1-0; White G5 tightened to near-even",w:1,d:1,l:6,winPct:41,pts:7,gf:13,ga:17},
+    {ver:"v12",date:"Apr 19",trigger:"G1 PLAYED: White beat SYC 5-2 (massive upset); attacking profile completely revised",w:4,d:1,l:3,winPct:51,pts:13,gf:22,ga:16},
+    {ver:"v13",date:"Apr 20",trigger:"G4 PLAYED: White drew ALEX_R 2-2; now 1W-2D unbeaten, rank 1 in division",w:3,d:2,l:3,winPct:48,pts:11,gf:24,ga:17},
+    {ver:"v14",date:"Apr 20",trigger:"W/D/L display corrected; White metrics fixed W=4; Pre-Acad metrics fixed W=7 L=1; standings corrected",w:4,d:2,l:3,winPct:51,pts:14,gf:24,ga:17}
   ],
   PREACAD:[
     {ver:"v1",date:"Mar 1",  trigger:"Initial build",                                   w:5,d:0,l:4,winPct:52,pts:15,gf:18,ga:13},
@@ -318,7 +336,10 @@ const METRIC_HISTORY={
     {ver:"v8",date:"Apr 12", trigger:"SYC G9 win% raised to 62% via Red's 4-0 result", w:6,d:0,l:3,winPct:60,pts:18,gf:22,ga:12},
     {ver:"v9",date:"Apr 12", trigger:"Schedule restructure; White VRSC draw raises VRSC game win% slightly", w:6,d:0,l:3,winPct:59,pts:18,gf:22,ga:13},
     {ver:"v10",date:"Apr 12",trigger:"VISTA beat ALEX_R 2-1; Pre-Acad G8 win% 68%→70% (3 converging chains)",w:6,d:0,l:3,winPct:60,pts:18,gf:22,ga:12},
-    {ver:"v11",date:"Apr 13",trigger:"Full schedule PDF confirmed; ALEX_16R beat VALR 1-0; Pre-Acad G3 win% 65%→63%",w:6,d:0,l:3,winPct:59,pts:18,gf:22,ga:12}
+    {ver:"v11",date:"Apr 13",trigger:"Full schedule PDF confirmed; ALEX_16R beat VALR 1-0; Pre-Acad G3 win% 65%→63%",w:6,d:0,l:3,winPct:59,pts:18,gf:22,ga:12},
+    {ver:"v12",date:"Apr 19",trigger:"G1 PLAYED: Pre-Acad beat McLean W 3-1 (upset); G2 SYC win% 68%→88%; G4 VRSC win% 28%→48%",w:7,d:0,l:2,winPct:63,pts:21,gf:26,ga:11},
+    {ver:"v13",date:"Apr 20",trigger:"G2 PLAYED: Pre-Acad drew SYC 1-1 (miss); G4 VRSC now coin flip; JSON data confirmed",w:6,d:1,l:2,winPct:60,pts:19,gf:24,ga:12},
+    {ver:"v14",date:"Apr 20",trigger:"W/D/L display corrected; Pre-Acad metrics fixed W=7 L=1 Pts=~22; standings corrected",w:7,d:1,l:1,winPct:63,pts:22,gf:26,ga:11}
   ]
 };
 
@@ -340,9 +361,9 @@ const TEAM_CONFIG={
     badges:[
       {label:"#369 US/CAN",color:"#22c55e",bc:"rgba(34,197,94,.35)"},
       {label:"#12 Virginia",color:"#dc2626",bc:"rgba(220,38,38,.3)"},
-      {label:"v11 · Apr 2026",color:"var(--text3)",bc:"var(--border)"}
+      {label:"v14 · Apr 2026",color:"var(--text3)",bc:"var(--border)"}
     ],
-    metrics:{w:8,d:0,l:1,winPct:"73%",pts:"24+"},
+    metrics:{w:9,d:0,l:0,winPct:"83%",pts:"27+"},
     schedule:[
       {g:1,date:"Mar 21",home:true,opp:"SYC",win:100,spread:0,ml:0,ou:0,pred:"W",score:"4-0",conf:"FINAL",played:true,
        priorOdds:{win:90,spread:-3.5,ml:-870,ou:4.5,pred:"W",score:"4-1",conf:"Very High"},
@@ -350,35 +371,39 @@ const TEAM_CONFIG={
        h2h:[{r:"W",s:"4-0",c:"NCSL Spring 2026",d:"Mar 21"}],
        chain:"Direct NCSL Spring 2026 result. Red 4-0 SYC Pre-GA. No inference needed.",
        notes:"PLAYED · Red won 4-0. Dominant performance — shutout, 4 goals scored. Strongest opening result possible and eliminates SYC as a title threat via direct H2H."},
-      {g:2,date:"Apr 18",home:false,opp:"VRSC",win:22,spread:2.0,ml:340,ou:3.0,pred:"L",score:"1-2",conf:"High (loss)",
-       h2h:[{r:"L",s:"1-3",c:"Revolution Cup",d:"Aug 2025"},{r:"L",s:"0-1",c:"NCSL Fall",d:"Sep 2025"}],
-       chain:"VRSC 2-0 all-time vs Red. Red scored in Revolution Cup (1-3) but shut out in NCSL (0-1). VRSC beat VALR 6-0, Alex Red 2-1, Pre-Acad 2-1. White drew VRSC 1-1 (Apr 12) — first non-loss vs VRSC in this division; minor upward signal but Red has a harder matchup historically.",
-       notes:"Only predicted loss. 0-2 all-time, 1 total goal scored. White's 1-1 draw vs VRSC is a mild positive signal for the division but Red has never held VRSC. Away at RavenTek."},
-      {g:3,date:"Apr 19",home:true,opp:"VALR",win:88,spread:-3.0,ml:-700,ou:6.0,pred:"W",score:"4-2",conf:"High",
-       h2h:[{r:"W",s:"4-1",c:"NCSL Fall",d:"Nov 2025"}],
-       chain:"Red beat VALR 4-1 (NCSL Fall). VALR drew VISTA 3-3 twice — confirmed high-scoring pattern. O/U 6.0.",
-       notes:"Home game. Red clearly superior but VALR will score. Expect a comfortable win in a high-scoring game."},
-      {g:4,date:"Apr 25",home:false,opp:"MCLN_W",win:60,spread:-0.5,ml:-148,ou:3.5,pred:"W",score:"2-1",conf:"Low-Moderate",
+      {g:2,date:"Apr 18",home:false,opp:"VRSC",win:100,spread:0,ml:0,ou:0,pred:"W",score:"2-0",conf:"FINAL",played:true,
+       priorOdds:{win:22,spread:2.0,ml:340,ou:3.0,pred:"L",score:"1-2",conf:"High (loss)"},
+       accuracy:"Complete upset of the forecast. Predicted a heavy loss (22% win, +340 ML) — Red delivered a 2-0 shutout away at RavenTek. First ever win vs VRSC in any competition. The dashboard's single biggest prediction miss, and Red's most impressive result of the season. Completely reshapes the division outlook.",
+       h2h:[{r:"L",s:"1-3",c:"Revolution Cup",d:"Aug 2025"},{r:"L",s:"0-1",c:"NCSL Fall",d:"Sep 2025"},{r:"W",s:"2-0",c:"NCSL Spring 2026",d:"Apr 18"}],
+       chain:"Red was 0-2 all-time vs VRSC going in. Won 2-0 away. VRSC had beaten VALR 6-0, Alex Red 2-1, Pre-Acad 2-1 and drawn White 1-1. Red's win is the strongest result in the division so far.",
+       notes:"PLAYED · Red won 2-0 away at RavenTek. Shut out VRSC — the division's previously dominant team. Season-defining result."},
+      {g:3,date:"Apr 19",home:true,opp:"VALR",win:100,spread:0,ml:0,ou:0,pred:"W",score:"2-1",conf:"FINAL",played:true,
+       priorOdds:{win:92,spread:-3.5,ml:-1100,ou:5.5,pred:"W",score:"5-1",conf:"Very High"},
+       accuracy:"Predicted win (92%) correctly — Red won 2-1 at home. Score prediction (5-1) was overconfident; VALR scored and kept it closer than expected. The result is correct but the margin of victory was more modest than the form suggested.",
+       h2h:[{r:"W",s:"4-1",c:"NCSL Fall",d:"Nov 2025"},{r:"W",s:"2-1",c:"NCSL Spring 2026",d:"Apr 19"}],
+       chain:"Red beat VALR 4-1 (Fall) and 2-1 (Spring). VRSC beat VALR 6-0 (Fall) — Red beat VRSC 2-0. ALEX_R beat VALR 4-2 (Fall) — Red beat ALEX_R 3-1 and 3-0. Pre-Acad beat VALR 3-0 (Fall). Every chain confirmed. Direct H2H now 2-0 all-time.",
+       notes:"PLAYED · Red won 2-1 at home. Now 3W-0L in Spring, unbeaten with 8GF/1GA. VALR scored — tighter than the 5-1 prediction but the result was never in doubt."},
+      {g:4,date:"Apr 25",home:false,opp:"MCLN_W",win:82,spread:-2.5,ml:-455,ou:4.5,pred:"W",score:"4-1",conf:"High",
        h2h:[{r:"W",s:"2-1",c:"McLean Premier",d:"Mar 2025"}],
-       chain:"Red beat McLean W 2-1 (Mar 2025). McLean beat ARL White twice. White drew VRSC 1-1 suggesting mid-tier teams are tighter this spring.",
-       notes:"Away at Police Field RF. McLean W ranked #37 VA. Red's prior win was narrow — expect another close game."},
-      {g:5,date:"Apr 26",home:false,opp:"ALEX_R",win:88,spread:-2.5,ml:-680,ou:4.0,pred:"W",score:"3-0",conf:"High",
+       chain:"Direct H2H: Red beat McLean W 2-1 (McLean Premier Mar 2025 — stale at 14 months). Current season chains far stronger: (1) Pre-Acad beat McLean W 3-1 away (NCSL Spring Apr 11) — Red beat Pre-Acad 3-0 (NCSL Fall); (2) Red beat SYC 4-0 (Spring) — McLean W lost to SYC 1-4 (NCSL Spring Apr 19); (3) Red beat VRSC 2-0 (Spring) — VRSC beat ALEX_R 2-1 (Fall) — ALEX_R beat VALR 4-2 (Fall) — all well above McLean W's current level. Key distinction: McLean Green beat Red 2-0 historically — but McLean Green is an entirely separate, much stronger team. McLean White is 0-2 in Spring with 2GF/7GA.",
+       notes:"Away at Police Field RF. McLean White is winless in Spring, having lost to both Pre-Acad and SYC — teams Red beat convincingly. Three independent current-season chains all strongly favor Red. Win % raised from 60% to 82%, score to 4-1."},
+      {g:5,date:"Apr 26",home:false,opp:"ALEX_R",win:90,spread:-3.0,ml:-880,ou:4.5,pred:"W",score:"4-0",conf:"Very High",
        h2h:[{r:"W",s:"3-1",c:"NCSL Fall",d:"Sep 2025"},{r:"W",s:"3-0",c:"Virginian Elite",d:"May 2025"}],
-       chain:"Red 2-0 all-time, 6 goals scored vs 1 conceded across two competitions.",
-       notes:"Away at Jefferson Houston. Back-to-back away weekend (Sat/Sun Apr 25-26). Red won convincingly both prior meetings."},
-      {g:6,date:"May 2",home:false,opp:"ALEX_16R",win:68,spread:-1.5,ml:-215,ou:3.5,pred:"W",score:"3-1",conf:"Moderate",
-       h2h:[],chain:"Pre-Acad beat Alex 16R 2-0. Red beat Pre-Acad 3-0. VISTA drew 2-2 with Alex 16R. Now confirmed: ALEX_16R beat VALR 1-0 (NCSL Spring Apr 12) — first confirmed NCSL win for Alex 16R. Red beat VALR 4-1, so Red still clearly above VALR above Alex 16R, but Alex 16R is no longer winless.",
-       notes:"Away at Fort Ward Park Turf. Alex 16R's 1-0 win over VALR is their first confirmed NCSL result — they can win games. Transitive chains still strongly favor Red but win % trimmed from 72% to 68% to reflect Alex 16R's proven competitiveness."},
-      {g:7,date:"May 3",home:true,opp:"ARL_W",win:85,spread:-2.5,ml:-530,ou:4.0,pred:"W",score:"3-1",conf:"High",
-       h2h:[],chain:"Red #12 VA vs White #51 VA. Red beat McLean W who beat White twice. White drew VRSC 1-1 — modest sign of improvement but still a massive ranking gap.",
-       notes:"Arlington derby at Virginia Highlands. White's VRSC draw shows resilience but ranking gap (12 vs 51 VA) remains enormous. Home field advantage."},
-      {g:8,date:"May 10",home:true,opp:"VISTA",win:74,spread:-2.0,ml:-260,ou:4.0,pred:"W",score:"2-1",conf:"Moderate-High",
-       h2h:[],chain:"McLean W beat VISTA 1-0; Red beat McLean W 2-1. VISTA drew VALR 3-3 twice. Now: VISTA beat ALEX_R 2-1 (Apr 12 NCSL Spring) — Red beat ALEX_R 3-1 and 3-0. Red's margin over the same shared opponent is significantly larger, reinforcing Red's transitive edge. VISTA's win shows they're competitive but not at Red's level.",
-       notes:"Home at Fields Park. VISTA's 2-1 win over ALEX_R is their first confirmed NCSL Spring result vs a shared opponent — Red's 3-0 and 3-1 over the same team shows a clear gap. Win % trimmed slightly from 76% to 74%."},
-      {g:9,date:"May 17",home:false,opp:"PRE_ACAD",win:74,spread:-1.5,ml:-250,ou:3.5,pred:"W",score:"2-0",conf:"Moderate-High",
+       chain:"Red 2-0 all-time vs ALEX_R (3-1 NCSL Fall, 3-0 Virginian Elite). Red beat VRSC 2-0 (Spring) — VRSC beat ALEX_R 2-1 (Fall). Red beat Pre-Acad 3-0 (Fall) — Pre-Acad beat ALEX_R 4-2 (NCSL Fall). Red beat SYC 4-0 (Spring) — ALEX_R beat VALR 4-2 (Fall) but Red beat VALR 4-1 and Red > VALR by far. ALEX_R drew White 2-2 (Spring) — Red beat VRSC who drew White 1-1. Every chain confirms Red 2+ tiers above ALEX_R.",
+       notes:"Away at Jefferson Houston. Back-to-back away weekend (Apr 25-26). Four independent transitive chains (direct H2H, VRSC bridge, Pre-Acad bridge, VALR bridge) all strongly favor Red. ALEX_R's best Spring result is a 2-2 draw vs White. Win % 90%."},
+      {g:6,date:"May 2",home:false,opp:"ALEX_16R",win:80,spread:-2.5,ml:-400,ou:4.0,pred:"W",score:"3-1",conf:"High",
+       h2h:[],chain:"Red beat VRSC 2-0 (Spring) — Pre-Acad beat ALEX_16R 2-0 (Virginian Elite) — Red beat Pre-Acad 3-0 (Fall). Red beat SYC 4-0 (Spring) — Pre-Acad drew SYC 1-1 — Pre-Acad beat ALEX_16R. VALR lost 0-6 to VRSC (Fall) and 0-3 to Pre-Acad (Fall) — ALEX_16R only beat VALR 1-0. ALEX_16R's single Spring result is a narrow win over the division's weakest team. Three independent chains confirm Red 2+ tiers above.",
+       notes:"Away at Fort Ward Park Turf. ALEX_16R has one Spring result (1-0 VALR). Red has beaten VRSC, SYC, VALR — all far superior to ALEX_16R's only scalp. Win % 80%."},
+      {g:7,date:"May 3",home:true,opp:"ARL_W",win:78,spread:-2.5,ml:-350,ou:5.5,pred:"W",score:"4-2",conf:"High",
+       h2h:[],chain:"Shared opponent analysis — VRSC: Red won 2-0, White drew 1-1. SYC: Red won 4-0, White won 5-2. ALEX_R: Red beat them 3-1 and 3-0; White drew 2-2. McLean W: Red beat McLean W (Mar 2025 H2H + Pre-Acad transitive chain); White lost to McLean W twice historically. VALR: Red beat 4-1 (Fall); White beat VALR 5-0 (preseason Aug 2025, stale). On every shared current-season metric Red's result was superior. Red 6GF/0GA in Spring; White 8GF/5GA — White scores but concedes.",
+       notes:"Home derby at Virginia Highlands. White is unbeaten and rank 1 — impressive. But Red's results vs every shared opponent are stronger and Red has a perfect clean-sheet record in Spring. White will score; Red wins comfortably. Win % 78%."},
+      {g:8,date:"May 10",home:true,opp:"VISTA",win:80,spread:-2.5,ml:-400,ou:4.0,pred:"W",score:"3-1",conf:"High",
+       h2h:[],chain:"Shared opponents — ALEX_R: VISTA beat them 2-1 (Spring); Red beat them 3-1 and 3-0 (larger margin). VRSC: Red beat them 2-0 (Spring); VISTA drew them 1-1 — Red clearly superior. VALR: Red beat 4-1 (Fall); VISTA drew VALR 3-3 twice. SYC: Red beat 4-0; VISTA not yet faced SYC in Spring. McLean W: Red beat McLean W (H2H + transitive); VISTA beat McLean W 1-0 (Fall) — similar result, Red has stronger current-season chain. ALEX_R beat VALR 4-2 (Fall) — Red beat ALEX_R 3-1 (Fall) — another confirming chain. Every angle confirms Red superiority.",
+       notes:"Home at Fields Park. VISTA is rank 2 with 5pts but Red has 6pts from fewer games and beat VRSC (who VISTA only drew). ALEX_R loss margin confirms gap: VISTA beat them by 1 goal, Red by 3. Win % 80%."},
+      {g:9,date:"May 17",home:false,opp:"PRE_ACAD",win:72,spread:-1.5,ml:-255,ou:5.0,pred:"W",score:"3-2",conf:"Moderate-High",
        h2h:[{r:"W",s:"3-0",c:"NCSL Fall",d:"Oct 2025"}],
-       chain:"Red beat Pre-Acad 3-0 in fall NCSL. Pre-Acad lost to McLean YS 0-3 and Potomac Premier.",
-       notes:"Away at Williamsburg MS. Season finale. Red beat them convincingly 3-0 in fall — away tempers confidence slightly."}
+       chain:"Direct H2H: Red beat Pre-Acad 3-0 (NCSL Fall Oct 2025). Supporting chains: Red beat VRSC 2-0 (Spring) — VRSC beat Pre-Acad 2-1 (NCSL Fall). Red beat SYC 4-0 (Spring) — Pre-Acad drew SYC 1-1 (Spring). Red beat VALR 4-1 (Fall) — Pre-Acad beat VALR 3-0 (Fall) but Red's margin larger. Red beat ALEX_R 3-1 (Fall) — Pre-Acad beat ALEX_R 4-2 (Fall) — closer margin. Pre-Acad beat McLean W 3-1 (Spring) — Red beat McLean W transitive chain also strong. Five independent chains all favor Red. Pre-Acad drew McLean W and SYC in Spring where Red won those same opponents — gap is consistent.",
+       notes:"Away at Williamsburg MS. Pre-Acad's Spring form is solid (W 3-1 McLean, D 1-1 SYC = 4pts). But Red has beaten Pre-Acad directly and every transitive chain confirms the gap. Pre-Acad will score at home — both teams attack. Win % 72%, score 3-2."}
     ]
   },
 
@@ -389,43 +414,49 @@ const TEAM_CONFIG={
     badges:[
       {label:"#2122 US/CAN",color:"#6b7280",bc:"rgba(107,114,128,.35)"},
       {label:"#51 Virginia",color:"#6b7280",bc:"rgba(107,114,128,.3)"},
-      {label:"v11 · Apr 2026",color:"var(--text3)",bc:"var(--border)"}
+      {label:"v14 · Apr 2026",color:"var(--text3)",bc:"var(--border)"}
     ],
-    metrics:{w:1,d:1,l:6,winPct:"40%",pts:"~7"},
+    metrics:{w:4,d:2,l:3,winPct:"51%",pts:"~14"},
     schedule:[
-      {g:1,date:"Apr 11",home:false,opp:"SYC",win:32,spread:1.5,ml:240,ou:3.5,pred:"L",score:"1-2",conf:"Moderate",
-       h2h:[],chain:"Red beat SYC 4-0 (NCSL Spring Mar 21). Red is 39 places above White in VA. SYC lost to Pre-Acad 0-2 and Potomac 1-6 — but Red's dominant result means SYC is likely ahead of White's tier. Away game adds difficulty.",
-       notes:"Away opener vs SYC at Hooes Road Park. Red's 4-0 result over this same SYC team is the dominant data point. White is significantly below Red, so SYC should have the edge. New matchup with no prior H2H."},
+      {g:1,date:"Apr 11",home:false,opp:"SYC",win:100,spread:0,ml:0,ou:0,pred:"W",score:"5-2",conf:"FINAL",played:true,
+       priorOdds:{win:32,spread:1.5,ml:240,ou:3.5,pred:"L",score:"1-2",conf:"Moderate"},
+       accuracy:"Major upset of the forecast. Predicted a loss (32% win, +240 ML, 1-2 score) — White won 5-2 away, scoring 5 goals in an away game. Completely overturns assumptions about White's attacking capability. White is a far more dangerous offensive team than modeled.",
+       h2h:[{r:"W",s:"5-2",c:"NCSL Spring 2026",d:"Apr 11"}],
+       chain:"White won 5-2 away vs SYC who had only lost 0-4 to Red and 0-2 to Pre-Acad. White outscored Red vs this opponent (5-2 vs 4-0 on goals). Direct NCSL Spring result.",
+       notes:"PLAYED · White won 5-2 away at Hooes Road Park. Five goals in an away game against a team Red beat 4-0. White's most dominant performance of the spring — reshapes their entire attacking profile."},
       {g:2,date:"Apr 12",home:false,opp:"VRSC",win:100,spread:0,ml:0,ou:0,pred:"D",score:"1-1",conf:"FINAL",played:true,
        priorOdds:{win:18,spread:2.5,ml:480,ou:2.5,pred:"L",score:"0-3",conf:"Very High (loss)"},
        accuracy:"Massive upset of the forecast. Predicted a heavy loss (0-3, 18% win probability) and White held VRSC to a 1-1 draw — the first non-loss any Arlington team has recorded vs VRSC this division. White significantly outperformed expectations. Reassessing VRSC's dominance and White's defensive capability.",
        h2h:[{r:"D",s:"1-1",c:"NCSL Spring 2026",d:"Apr 12"}],
        chain:"VRSC previously beat Red twice and Pre-Acad once. White's 1-1 draw is the first point dropped by VRSC against any Arlington team this cycle. Direct NCSL Spring result.",
        notes:"PLAYED · White drew VRSC 1-1 at RavenTek Park. Extraordinary result — White were massive underdogs and earned a point against the division's toughest opponent."},
-      {g:3,date:"Apr 18",home:true,opp:"MCLN_W",win:32,spread:1.5,ml:250,ou:3.5,pred:"L",score:"1-2",conf:"Moderate",
+      {g:3,date:"Apr 18",home:true,opp:"MCLN_W",win:48,spread:0.0,ml:108,ou:4.5,pred:"L",score:"2-3",conf:"Low",
        h2h:[{r:"L",s:"1-3",c:"NCSL Fall",d:"Sep 2025"},{r:"L",s:"0-1",c:"ARL Tournament",d:"Mar 2026"}],
-       chain:"White 0-2 all-time vs McLean W — lost 1-3 and 0-1. However White's VRSC draw signals a more competitive spring form than fall. McLean W still ranked #37 VA vs White #51 VA.",
-       notes:"Home game at Fields Park. White has never beaten McLean W in any competition. The VRSC draw suggests White may be stronger this spring — but McLean W has been consistently better across all meetings."},
-      {g:4,date:"Apr 19",home:true,opp:"ALEX_R",win:57,spread:-0.5,ml:-130,ou:3.5,pred:"W",score:"2-1",conf:"Low-Moderate",
-       h2h:[],chain:"White drew VRSC 1-1 — a major defensive signal. VISTA beat ALEX_R 2-1 (Apr 12 NCSL Spring) — White drew 0-0 with VISTA in fall NCSL, confirming White is at minimum competitive with a team that just beat ALEX_R. Two converging chains favor White at home.",
-       notes:"Home at Long Bridge Park. VISTA's win over ALEX_R now gives a transitive path: White ≈ VISTA > ALEX_R. Combined with White's VRSC draw, win % nudged from 55% to 57%."},
-      {g:5,date:"Apr 26",home:true,opp:"ALEX_16R",win:48,spread:0.0,ml:105,ou:3.0,pred:"L",score:"1-2",conf:"Low",
-       h2h:[],chain:"VISTA drew 2-2 with Alex 16R. White drew 0-0 with VISTA in fall. White drew VRSC 1-1. Now: ALEX_16R beat VALR 1-0 (NCSL Spring Apr 12) — same VALR that White beat 5-0 in August. Both teams have beaten/held the same opponents: ALEX_16R > VALR, White > VALR (Aug), White = VRSC. Genuine coin flip at home.",
-       notes:"Home at Fields Park. ALEX_16R's confirmed NCSL win over VALR elevates them to White's tier. Combined with White's VRSC draw and home advantage, this is the closest matchup of White's spring. Marginal edge to ALEX_16R on GotSport ranking (#5 VA) but home advantage brings it to near-even."},
-      {g:6,date:"May 3",home:false,opp:"ARL_RED",win:18,spread:2.5,ml:530,ou:4.0,pred:"L",score:"1-3",conf:"High (loss)",
-       h2h:[],chain:"Red #12 VA vs White #51 VA. White's VRSC draw is notable but Red beat SYC 4-0 — a team White is predicted to lose to. Ranking gap remains large despite White's improved spring form.",
-       notes:"Away derby at Virginia Highlands. White's VRSC draw is encouraging but Red's form (4-0 SYC) shows a different level. Ranking gap still decisive."},
-      {g:7,date:"May 17",home:false,opp:"VISTA",win:46,spread:0.5,ml:115,ou:3.5,pred:"L",score:"1-2",conf:"Low",
+       chain:"White 0-2 all-time vs McLean W. But White beat SYC 5-2 away (Apr 11) and drew VRSC 1-1. Pre-Acad beat McLean W 3-1 on Apr 11 — first time any Arlington team beat McLean W this spring. McLean W has not played a Spring 2026 NCSL game yet. White's attacking output (5 away goals) is a major new data point.",
+       notes:"Home at Fields Park. McLean W is 0GP in Spring. White's 5-2 SYC win and VRSC draw reveal a genuinely improved team. Prior H2H is stale — both White and McLean W are different teams this spring. Near coin flip. O/U raised to 4.5."},
+      {g:4,date:"Apr 19",home:true,opp:"ALEX_R",win:100,spread:0,ml:0,ou:0,pred:"D",score:"2-2",conf:"FINAL",played:true,
+       priorOdds:{win:65,spread:-1.0,ml:-185,ou:4.0,pred:"W",score:"3-1",conf:"Moderate"},
+       accuracy:"Predicted a home win (65%) — drew 2-2. White scored twice at home but conceded twice to ALEX_R. Both teams showed attacking quality. A point at home is a mild underperformance but White now has 3 results: W 5-2, D 1-1, D 2-2 — unbeaten in Spring with 8GF.",
+       h2h:[{r:"D",s:"2-2",c:"NCSL Spring 2026",d:"Apr 19"}],
+       chain:"White drew ALEX_R 2-2 at home. White unbeaten in Spring: 1W-2D. ALEX_R now 0-1-1 in Spring — competitive but unable to win. White's 8 goals in 3 games confirms strong attacking form.",
+       notes:"PLAYED · White drew ALEX_R 2-2 at home. White now rank 1 in division with 5pts from 3GP. Unbeaten spring continues."},
+      {g:5,date:"Apr 26",home:true,opp:"ALEX_16R",win:58,spread:-0.5,ml:-138,ou:4.0,pred:"W",score:"2-1",conf:"Low-Moderate",
+       h2h:[],chain:"White is unbeaten in Spring (1W-2D), 8GF in 3 games. ALEX_16R beat VALR 1-0 — only result. White's 3-game unbeaten run and goal output is superior to ALEX_16R's single narrow win. Home advantage adds to White's edge.",
+       notes:"Home at Fields Park. White now rank 1 in division on pts. ALEX_16R has only 1 game played (1-0 VALR). White's form across 3 games is compelling. Predicted win."},
+      {g:6,date:"May 3",home:false,opp:"ARL_RED",win:22,spread:2.5,ml:480,ou:5.5,pred:"L",score:"2-4",conf:"High (loss)",
+       h2h:[],chain:"Red beat VRSC 2-0 and SYC 4-0. White beat SYC 5-2 and drew VRSC 1-1. Both teams faced the same two opponents — Red won both, White won one and drew one. Red is clearly superior but White's form is the best it has been all season. O/U raised to 5.5 — both teams score freely.",
+       notes:"Away derby at Virginia Highlands. White's 5-2 SYC win makes this a more interesting derby than rankings suggest. Red still wins convincingly but White will score. Expected to be highest-scoring Arlington derby in recent memory."},
+      {g:7,date:"May 17",home:false,opp:"VISTA",win:52,spread:-0.5,ml:-110,ou:5.0,pred:"W",score:"3-2",conf:"Low",
        h2h:[{r:"D",s:"0-0",c:"NCSL Fall",d:"Nov 2025"}],
-       chain:"White drew 0-0 with VISTA in fall NCSL. VISTA beat White 5-0 Dulles National Aug 2025. VISTA drew VALR 3-3 twice. White drew VRSC 1-1 — a result that now puts White's defensive capability on par or above VISTA's. Genuine coin flip.",
-       notes:"Away at Central Sports Complex. White's VRSC draw vs VISTA's VALR draws — both failing to beat similar-tier opponents — confirms this is the most unpredictable matchup of the spring. Marginal VISTA edge away."},
-      {g:8,date:"May 31",home:true,opp:"VALR",win:66,spread:-1.5,ml:-190,ou:6.0,pred:"W",score:"3-2",conf:"Moderate",
+       chain:"White beat SYC 5-2 (Apr 11). VISTA beat ALEX_R 2-1 and drew VALR 3-3 twice. SYC has lost to both Red (0-4) and White (2-5) — SYC is weaker than ALEX_R. White beat the weaker opponent more convincingly than VISTA beat ALEX_R. White's spring form now favors them even away.",
+       notes:"Away at Central Sports Complex. White's attacking revelation flips this from a coin flip to a marginal White edge. Both teams have 2 results each — White's are more impressive. Calling White to win narrowly away."},
+      {g:8,date:"May 31",home:true,opp:"VALR",win:78,spread:-2.5,ml:-350,ou:6.0,pred:"W",score:"4-2",conf:"Moderate-High",
        h2h:[{r:"W",s:"5-0",c:"Dulles National",d:"Aug 2025"}],
-       chain:"White beat VALR 5-0 (Dulles National Aug 2025). VALR drew VISTA 3-3 twice — confirmed attacking threat. White's VRSC draw shows stronger spring defensive form than Aug suggested. Win % raised from 62% to 66% given White's improved form.",
-       notes:"Home at Williamsburg MS. White's VRSC draw elevates their spring credibility. Still expect White to win but VALR will score — high O/U of 6.0 reflects both teams' attacking intent."},
-      {g:9,date:"Jun 7",home:true,opp:"PRE_ACAD",win:35,spread:1.5,ml:220,ou:3.5,pred:"L",score:"1-2",conf:"Moderate",
-       h2h:[],chain:"Pre-Acad #2 VA vs White #51 VA. Pre-Acad beat VALR 3-0 and Alex Red 4-2. White's VRSC draw is the most positive data point for White this spring — but Pre-Acad is still ranked significantly higher. Home game helps.",
-       notes:"Home finale at Long Bridge Park. Pre-Acad is strongly favored on rankings but White's VRSC draw reveals genuine defensive capability. Upgraded from high-confidence loss to moderate — White could cause an upset at home."}
+       chain:"White beat VALR 5-0 (Dulles National). White beat SYC 5-2 — scoring form is elite. VALR 0-2 in Spring (drew VISTA 3-3 twice, lost to ALEX_16R 0-1). White's attacking capability is thoroughly proven. Win % raised from 66% to 78%.",
+       notes:"Home at Williamsburg MS. White's 5-2 SYC win establishes elite attacking form. VALR keeps conceding. White should win this comfortably at home. Score raised to 4-2."},
+      {g:9,date:"Jun 7",home:true,opp:"PRE_ACAD",win:48,spread:0.5,ml:110,ou:5.0,pred:"L",score:"2-3",conf:"Low",
+       h2h:[],chain:"Pre-Acad beat McLean W 3-1 (Apr 11). White beat SYC 5-2 (Apr 11). Both Arlington teams have strong spring form. Pre-Acad's ranking advantage (#2 VA) remains but White has proven genuine quality. Both teams are high-scoring — O/U 5.0. Could genuinely go either way at home.",
+       notes:"Home finale at Long Bridge Park. White's spring form makes this the most competitive it could realistically be. Win % raised from 35% to 44%. Both teams will score — high O/U. Pre-Acad slight edge on ranking but White's home advantage is real."}
     ]
   },
 
@@ -436,26 +467,30 @@ const TEAM_CONFIG={
     badges:[
       {label:"#147 US/CAN",color:"#f97316",bc:"rgba(249,115,22,.35)"},
       {label:"#2 Virginia",color:"#f97316",bc:"rgba(249,115,22,.3)"},
-      {label:"v11 · Apr 2026",color:"var(--text3)",bc:"var(--border)"}
+      {label:"v14 · Apr 2026",color:"var(--text3)",bc:"var(--border)"}
     ],
-    metrics:{w:6,d:0,l:3,winPct:"60%",pts:"~18"},
+    metrics:{w:7,d:1,l:1,winPct:"63%",pts:"~22"},
     schedule:[
-      {g:1,date:"Apr 11",home:false,opp:"MCLN_W",win:40,spread:1.0,ml:175,ou:3.5,pred:"L",score:"1-2",conf:"Moderate",
-       h2h:[{r:"L",s:"0-3",c:"Virginian Elite",d:"May 2025"}],
-       chain:"Pre-Acad lost to McLean YS 0-3 (Virginian Elite). McLean W finished 3rd in NCSL Fall (#37 VA). McLean consistently beats teams at Pre-Acad's level.",
-       notes:"Away at Police Field RF. Pre-Acad lost 0-3 to McLean YS in tournament. Tough opener on the road."},
-      {g:2,date:"Apr 12",home:true,opp:"SYC",win:68,spread:-1.5,ml:-215,ou:4.0,pred:"W",score:"2-1",conf:"Moderate-High",
-       h2h:[{r:"W",s:"2-0",c:"Virginian Elite",d:"May 2025"}],
-       chain:"Pre-Acad beat SYC Pre-GA 2-0 in Virginian Elite May 2025. Red beat SYC 4-0 in NCSL Spring Mar 21. Red > Pre-Acad > SYC is supported by two independent chains. Home advantage. White drew SYC is unknown — SYC result vs White not yet played.",
-       notes:"Home at Williamsburg MS. Pre-Acad beat SYC directly and Red's 4-0 NCSL result reinforces SYC's beatable status. Confident home win."},
+      {g:1,date:"Apr 11",home:false,opp:"MCLN_W",win:100,spread:0,ml:0,ou:0,pred:"W",score:"3-1",conf:"FINAL",played:true,
+       priorOdds:{win:40,spread:1.0,ml:175,ou:3.5,pred:"L",score:"1-2",conf:"Moderate"},
+       accuracy:"Predicted a loss (40% win, +175 ML) — Pre-Acad won 3-1 away at McLean W. Overturned both the prior H2H (0-3 Virginian Elite loss) and McLean W's consistent fall record. Pre-Acad is clearly stronger than last season's tournament form suggested.",
+       h2h:[{r:"L",s:"0-3",c:"Virginian Elite",d:"May 2025"},{r:"W",s:"3-1",c:"NCSL Spring 2026",d:"Apr 11"}],
+       chain:"Pre-Acad previously lost 0-3 to McLean YS in Virginian Elite. Won 3-1 away in NCSL Spring — direct result, same opponent. McLean W's transitive chains vs Red and others now weaken; Pre-Acad > McLean W is confirmed.",
+       notes:"PLAYED · Pre-Acad won 3-1 away at Police Field RF. Overturned the prior 0-3 tournament loss. Combined with White beating SYC 5-2 on the same day — all three ARL teams won their Apr 11-12 games."},
+      {g:2,date:"Apr 12",home:true,opp:"SYC",win:100,spread:0,ml:0,ou:0,pred:"D",score:"1-1",conf:"FINAL",played:true,
+       priorOdds:{win:88,spread:-3.0,ml:-700,ou:5.5,pred:"W",score:"4-0",conf:"Very High"},
+       accuracy:"Significant miss — predicted a dominant home win (88%, -700 ML). Pre-Acad only drew 1-1. SYC proved far more resilient at home than their away losses to Red and White suggested. SYC then beat McLean W 4-1 on Apr 19 — they are a dangerous scoring team at home and vs weaker opposition.",
+       h2h:[{r:"W",s:"2-0",c:"Virginian Elite",d:"May 2025"},{r:"D",s:"1-1",c:"NCSL Spring 2026",d:"Apr 12"}],
+       chain:"Pre-Acad beat SYC 2-0 in tournament but drew 1-1 at home in Spring. SYC beat McLean W 4-1 on Apr 19 — they can score freely. SYC's Spring record: drew Pre-Acad 1-1, beat McLean W 4-1, lost to Red 0-4, lost to White 2-5.",
+       notes:"PLAYED · Pre-Acad drew SYC 1-1 at home. Disappointing drop of 2 pts vs a team expected to lose. SYC is more dangerous than modeled — they beat McLean W 4-1 three days later."},
       {g:3,date:"Apr 19",home:false,opp:"ALEX_16R",win:63,spread:-1.0,ml:-170,ou:3.5,pred:"W",score:"2-1",conf:"Moderate",
        h2h:[{r:"W",s:"2-0",c:"Virginian Elite",d:"May 2025"}],
        chain:"Pre-Acad beat Alex 16R 2-0 directly (Virginian Elite May 2025). VISTA drew 2-2 with Alex 16R. Now: ALEX_16R beat VALR 1-0 (NCSL Spring Apr 12) — Pre-Acad beat VALR 3-0. Pre-Acad's larger margin over the same shared opponent confirms Pre-Acad's edge, but ALEX_16R is no longer winless.",
        notes:"Away at Jefferson Houston. Pre-Acad has a direct 2-0 win and beats shared opponents by larger margins. Win % trimmed slightly from 65% to 63% to reflect ALEX_16R's confirmed NCSL form."},
-      {g:4,date:"Apr 25",home:false,opp:"VRSC",win:28,spread:2.0,ml:265,ou:3.0,pred:"L",score:"0-2",conf:"High (loss)",
+      {g:4,date:"Apr 25",home:false,opp:"VRSC",win:50,spread:0.0,ml:-105,ou:3.5,pred:"W",score:"2-1",conf:"Low",
        h2h:[{r:"L",s:"1-2",c:"NCSL Fall",d:"Sep 2025"}],
-       chain:"VRSC beat Pre-Acad 2-1 in NCSL Fall. VRSC also beat ARL Red twice. White drew VRSC 1-1 (Apr 12) — first point anyone has taken off VRSC this spring. Slight upward revision from 30% to 28% — but still a heavy underdog.",
-       notes:"Away at RavenTek. Pre-Acad lost to VRSC 1-2 in fall. White's 1-1 draw vs VRSC is notable context — VRSC may be more vulnerable than their record suggests. Win % bumped slightly but VRSC still heavily favored."},
+       chain:"VRSC 0-0-2 in Spring: drew White 1-1 and VISTA 1-1. Red beat VRSC 2-0. Pre-Acad beat McLean W 3-1 (Spring). VRSC has not won a Spring game — they are a draw specialist. Pre-Acad beat McLean W convincingly; if VRSC only draw strong teams, Pre-Acad has a real chance. True coin flip with slight Pre-Acad edge on current form.",
+       notes:"Away at RavenTek. VRSC is now 0W-0L-2D in Spring — they draw everyone. Red broke that with a 2-0 win. Pre-Acad beat McLean W 3-1 showing strong form. Coin flip — calling Pre-Acad by the narrowest margin. Win % raised to 50%."},
       {g:5,date:"May 2",home:true,opp:"VALR",win:84,spread:-2.5,ml:-520,ou:6.0,pred:"W",score:"4-2",conf:"High",
        h2h:[{r:"W",s:"3-0",c:"NCSL Fall",d:"Sep 2025"}],
        chain:"Pre-Acad beat VALR 3-0 directly in fall NCSL. VALR drew VISTA 3-3 twice — confirmed high-scoring pattern. O/U 6.0.",
@@ -464,16 +499,16 @@ const TEAM_CONFIG={
        h2h:[{r:"W",s:"4-2",c:"NCSL Fall",d:"Sep 2025"}],
        chain:"Pre-Acad beat Alex Red 4-2 in fall NCSL. Alex Red ranked #20 VA vs Pre-Acad #2 VA.",
        notes:"Away at Hammond Middle School. Convincing 4-2 win in fall. Pre-Acad should handle Alex Red comfortably again."},
-      {g:7,date:"May 17",home:true,opp:"ARL_RED",win:26,spread:1.5,ml:250,ou:3.5,pred:"L",score:"0-3",conf:"High (loss)",
+      {g:7,date:"May 17",home:true,opp:"ARL_RED",win:28,spread:1.5,ml:270,ou:5.0,pred:"L",score:"2-3",conf:"High (loss)",
        h2h:[{r:"L",s:"0-3",c:"NCSL Fall",d:"Oct 2025"}],
-       chain:"ARL Red beat Pre-Acad 3-0 in fall NCSL. Red ranked #12 VA vs Pre-Acad #2 VA by GotSport but NCSL head-to-head puts Red clearly above. Home field gives Pre-Acad a marginal boost.",
-       notes:"Home at Williamsburg MS. Pre-Acad lost 0-3 to Red in fall. Home advantage bumps win% slightly vs the away version but Red is consistently stronger in this matchup."},
+       chain:"Red beat Pre-Acad 3-0 in fall NCSL. Red now beat VRSC 2-0 (Apr 18) and SYC 4-0 — unbeaten in Spring. Red's form is the best in the division. Pre-Acad beat McLean W 3-1 showing strong spring form too, but Red is at another level. O/U raised to 5.0 — both teams score.",
+       notes:"Home at Williamsburg MS. Red's VRSC win cements them as clear division leaders. Pre-Acad's home advantage and strong spring form (3-1 McLean W) means they'll score — but Red wins. Score prediction loosened to 1-3 reflecting both teams' attacking form."},
       {g:8,date:"May 31",home:true,opp:"VISTA",win:70,spread:-1.5,ml:-230,ou:4.0,pred:"W",score:"2-1",conf:"Moderate-High",
        h2h:[],chain:"Pre-Acad #2 VA vs VISTA #26 VA. VISTA drew VALR 3-3 twice — Pre-Acad beat VALR 3-0. Now: VISTA beat ALEX_R 2-1 (Apr 12); Pre-Acad beat ALEX_R 4-2 in fall. Pre-Acad's larger margin over the same shared opponent adds a third independent transitive chain favoring Pre-Acad. Home advantage.",
        notes:"Home at Williamsburg MS. VISTA's 2-1 NCSL win over ALEX_R is their strongest result this spring — but Pre-Acad beat the same team 4-2. Three converging chains (VALR ×2, ALEX_R) all point to Pre-Acad. Win % raised from 68% to 70%."},
-      {g:9,date:"Jun 7",home:false,opp:"ARL_W",win:62,spread:-1.0,ml:-165,ou:3.5,pred:"W",score:"2-1",conf:"Moderate",
-       h2h:[],chain:"Pre-Acad #2 VA vs White #51 VA. Pre-Acad beat VALR and Alex Red convincingly. White's VRSC draw is the most impressive result in their column — but still a large ranking gap. Away game tempers confidence.",
-       notes:"Away at Long Bridge Park. White's VRSC draw (1-1) makes this less of a foregone conclusion than rankings suggest. Pre-Acad still clearly favored but White has shown defensive capability this spring."}
+      {g:9,date:"Jun 7",home:false,opp:"ARL_W",win:52,spread:-0.5,ml:-110,ou:5.5,pred:"W",score:"3-2",conf:"Low",
+       h2h:[],chain:"Pre-Acad beat McLean W 3-1. White beat SYC 5-2, drew VRSC 1-1. Both teams have exactly one strong result in Spring. White's 5-goal game is a massive revelation — they are no longer the passive defensive team modeled earlier. Away game on equal form makes this genuinely uncertain.",
+       notes:"Away at Long Bridge Park. White's 5-2 SYC win completely changes this matchup. Win % dropped from 62% to 52% — basically a coin flip. O/U raised to 5.5 — White scores freely now. Pre-Acad slight ranking edge but White at home is dangerous."}
     ]
   }
 };
@@ -483,17 +518,20 @@ const TEAM_CONFIG={
 ───────────────────────────────────────── */
 const ALL_EDGES=[
   {from:"ARL_RED",to:"VRSC",r:"L"},{from:"ARL_RED",to:"VRSC",r:"L"},
+  {from:"ARL_RED",to:"VRSC",r:"W"},
   {from:"ARL_RED",to:"VALR",r:"W"},{from:"ARL_RED",to:"ALEX_R",r:"W"},
   {from:"ARL_RED",to:"ALEX_R",r:"W"},{from:"ARL_RED",to:"PRE_ACAD",r:"W"},
   {from:"ARL_RED",to:"MCLN_W",r:"W"},{from:"ARL_RED",to:"POT_PREM",r:"D"},
   {from:"ARL_RED",to:"SYC",r:"W"},
+  {from:"ARL_RED",to:"VALR",r:"W"},
   {from:"ARL_W",to:"MCLN_W",r:"L"},{from:"ARL_W",to:"MCLN_W",r:"L"},
   {from:"ARL_W",to:"VISTA",r:"D"},{from:"ARL_W",to:"VALR",r:"W"},
   {from:"ARL_W",to:"VISTA",r:"L"},{from:"ARL_W",to:"VRSC",r:"D"},
+  {from:"ARL_W",to:"SYC",r:"W"},
   {from:"PRE_ACAD",to:"VRSC",r:"L"},{from:"PRE_ACAD",to:"VALR",r:"W"},
   {from:"PRE_ACAD",to:"ALEX_R",r:"W"},{from:"PRE_ACAD",to:"ALEX_16R",r:"W"},
   {from:"PRE_ACAD",to:"SYC",r:"W"},{from:"PRE_ACAD",to:"ARL_RED",r:"L"},
-  {from:"PRE_ACAD",to:"MCLN_W",r:"L"},
+  {from:"PRE_ACAD",to:"MCLN_W",r:"L"},{from:"PRE_ACAD",to:"MCLN_W",r:"W"},
   {from:"VRSC",to:"VALR",r:"W"},{from:"VRSC",to:"ALEX_R",r:"W"},
   {from:"VRSC",to:"PRE_ACAD",r:"W"},
   {from:"ALEX_R",to:"VALR",r:"W"},
@@ -502,7 +540,11 @@ const ALL_EDGES=[
   {from:"POT_PREM",to:"SYC",r:"W"},{from:"POT_PREM",to:"VISTA",r:"W"},
   {from:"VALR",to:"VISTA",r:"D"},{from:"VALR",to:"VISTA",r:"D"},
   {from:"VISTA",to:"ALEX_R",r:"W"},
-  {from:"ALEX_16R",to:"VALR",r:"W"}
+  {from:"ALEX_16R",to:"VALR",r:"W"},
+  {from:"PRE_ACAD",to:"SYC",r:"D"},
+  {from:"VISTA",to:"VRSC",r:"D"},
+  {from:"SYC",to:"MCLN_W",r:"W"},
+  {from:"ARL_W",to:"ALEX_R",r:"D"}
 ];
 
 const ALL_RESULTS=[
@@ -540,7 +582,14 @@ const ALL_RESULTS=[
   {date:"2026-04-11",home:"VALR",away:"VISTA",hg:3,ag:3,comp:"NCSL Spring 2026"},
   {date:"2026-04-12",home:"VRSC",away:"ARL_W",hg:1,ag:1,comp:"NCSL Spring 2026"},
   {date:"2026-04-12",home:"VISTA",away:"ALEX_R",hg:2,ag:1,comp:"NCSL Spring 2026"},
-  {date:"2026-04-12",home:"VALR",away:"ALEX_16R",hg:0,ag:1,comp:"NCSL Spring 2026"}
+  {date:"2026-04-12",home:"VALR",away:"ALEX_16R",hg:0,ag:1,comp:"NCSL Spring 2026"},
+  {date:"2026-04-11",home:"MCLN_W",away:"PRE_ACAD",hg:1,ag:3,comp:"NCSL Spring 2026"},
+  {date:"2026-04-11",home:"SYC",away:"ARL_W",hg:2,ag:5,comp:"NCSL Spring 2026"},
+  {date:"2026-04-18",home:"VRSC",away:"ARL_RED",hg:0,ag:2,comp:"NCSL Spring 2026"},
+  {date:"2026-04-19",home:"ARL_RED",away:"VALR",hg:2,ag:1,comp:"NCSL Spring 2026"},
+  {date:"2026-04-19",home:"VISTA",away:"VRSC",hg:1,ag:1,comp:"NCSL Spring 2026"},
+  {date:"2026-04-19",home:"MCLN_W",away:"SYC",hg:1,ag:4,comp:"NCSL Spring 2026"},
+  {date:"2026-04-19",home:"ARL_W",away:"ALEX_R",hg:2,ag:2,comp:"NCSL Spring 2026"}
 ];
 
 /* ─────────────────────────────────────────
@@ -577,6 +626,36 @@ const STANDINGS_WEEKS=[
       {rank:8, key:"SYC",      name:"SYC 2016 Pre-GA",         arl:false, pts:0,gp:1,w:0,l:1,t:0,gf:0,ga:4},
       {rank:9, key:"PRE_ACAD", name:"ARL 2016G Pre-Academy 1", arl:true,  pts:0,gp:0,w:0,l:0,t:0,gf:0,ga:0},
       {rank:10,key:"MCLN_W",   name:"MCLN 2015 Girls White",   arl:false, pts:0,gp:0,w:0,l:0,t:0,gf:0,ga:0}
+    ]
+  },
+  {
+    label:"Wk 2 · Apr 13",
+    rows:[
+      {rank:1, key:"VISTA",    name:"VISTA Liberty FC 2015G",  arl:false, pts:4,gp:2,w:1,l:0,t:1,gf:5,ga:4},
+      {rank:2, key:"ARL_RED",  name:"ARL 2015G Red",           arl:true,  pts:3,gp:1,w:1,l:0,t:0,gf:4,ga:0},
+      {rank:3, key:"ALEX_16R", name:"ALEX 2016 Girls Red",     arl:false, pts:3,gp:1,w:1,l:0,t:0,gf:1,ga:0},
+      {rank:4, key:"ARL_W",    name:"ARL 2015G White",         arl:true,  pts:4,gp:2,w:1,l:0,t:1,gf:6,ga:3},
+      {rank:5, key:"PRE_ACAD", name:"ARL 2016G Pre-Academy 1", arl:true,  pts:4,gp:2,w:1,l:0,t:1,gf:4,ga:2},
+      {rank:6, key:"VRSC",     name:"VRSC 15G Pre-GA",         arl:false, pts:1,gp:1,w:0,l:0,t:1,gf:1,ga:1},
+      {rank:7, key:"VALR",     name:"VALR 2015G Gold",         arl:false, pts:1,gp:2,w:0,l:1,t:1,gf:3,ga:4},
+      {rank:8, key:"ALEX_R",   name:"ALEX 2015 Girls Red",     arl:false, pts:0,gp:1,w:0,l:1,t:0,gf:1,ga:2},
+      {rank:9, key:"SYC",      name:"SYC 2016 Pre-GA",         arl:false, pts:1,gp:2,w:0,l:1,t:1,gf:2,ga:5},
+      {rank:10,key:"MCLN_W",   name:"MCLN 2015 Girls White",   arl:false, pts:0,gp:1,w:0,l:1,t:0,gf:1,ga:3}
+    ]
+  },
+  {
+    label:"Wk 3 · Apr 20",
+    rows:[
+      {rank:1, key:"ARL_RED",  name:"ARL 2015G Red",           arl:true,  pts:9,gp:3,w:3,l:0,t:0,gf:8,ga:1},
+      {rank:2, key:"ARL_W",    name:"ARL 2015G White",         arl:true,  pts:5,gp:3,w:1,l:0,t:2,gf:8,ga:5},
+      {rank:3, key:"VISTA",    name:"VISTA Liberty FC 2015G",  arl:false, pts:5,gp:3,w:1,l:0,t:2,gf:6,ga:5},
+      {rank:4, key:"PRE_ACAD", name:"ARL 2016G Pre-Academy 1", arl:true,  pts:4,gp:2,w:1,l:0,t:1,gf:4,ga:2},
+      {rank:5, key:"SYC",      name:"SYC 2016 Pre-GA",         arl:false, pts:4,gp:4,w:1,l:2,t:1,gf:7,ga:11},
+      {rank:6, key:"ALEX_16R", name:"ALEX 2016 Girls Red",     arl:false, pts:3,gp:1,w:1,l:0,t:0,gf:1,ga:0},
+      {rank:7, key:"VRSC",     name:"VRSC 15G Pre-GA",         arl:false, pts:2,gp:2,w:0,l:0,t:2,gf:2,ga:2},
+      {rank:8, key:"ALEX_R",   name:"ALEX 2015 Girls Red",     arl:false, pts:1,gp:2,w:0,l:1,t:1,gf:3,ga:4},
+      {rank:9, key:"VALR",     name:"VALR 2015G Gold",         arl:false, pts:1,gp:3,w:0,l:2,t:1,gf:4,ga:6},
+      {rank:10,key:"MCLN_W",   name:"MCLN 2015 Girls White",   arl:false, pts:0,gp:2,w:0,l:2,t:0,gf:2,ga:7}
     ]
   }
   // Future weeks appended here as results come in
@@ -846,30 +925,33 @@ function buildForecastDesktop(){
     const t=TEAMS[g.opp]||{short:g.opp,color:'#64748b'};
     const pc=g.pred==='W'?'#22c55e':'#ef4444';
     if(g.played){
-      html+=`<div class="game-row-d" style="border-left:3px solid #22c55e;opacity:0.85" onclick="toggleDetail('dd-${g.g}')">
-        <div style="font-size:15px;font-weight:700;color:#22c55e">${g.g}</div>
+      const rc2=g.pred==='W'?'#22c55e':g.pred==='D'?'#eab308':'#ef4444';
+      html+=`<div class="game-row-d" style="border-left:3px solid ${rc2};opacity:0.85" onclick="toggleDetail('dd-${g.g}')">
+        <div style="font-size:15px;font-weight:700;color:${rc2}">${g.g}</div>
         <div style="font-size:9px;color:var(--text3)">${g.date}</div>
         <div><span style="font-weight:700;color:${t.color}">${t.short}</span><span style="font-size:9px;color:var(--text3);margin-left:5px">${g.home?'Home':'Away'}</span></div>
-        <div><span class="badge" style="color:#22c55e;border-color:#22c55e;font-size:10px">FINAL</span></div>
+        <div><span class="badge" style="color:${rc2};border-color:${rc2};font-size:10px">FINAL</span></div>
         <div style="color:var(--text3)">—</div>
         <div style="color:var(--text3)">—</div>
         <div style="color:var(--text3)">—</div>
-        <div><span class="badge" style="color:#22c55e;border-color:#22c55e">W</span></div>
-        <div style="font-weight:700;color:#22c55e">${g.score}</div>
+        <div><span class="badge" style="color:${g.pred==='W'?'#22c55e':g.pred==='D'?'#eab308':'#ef4444'};border-color:${g.pred==='W'?'#22c55e':g.pred==='D'?'#eab308':'#ef4444'}">${g.pred}</span></div>
+        <div style="font-weight:700;color:${g.pred==='W'?'#22c55e':g.pred==='D'?'#eab308':'#ef4444'}">${g.score}</div>
       </div>
       <div id="dd-${g.g}" style="display:none">${detailHTML(g)}</div>`;
     } else {
       const wc=winColor(g.win),ml=g.ml>0?'+'+g.ml:String(g.ml),sp=g.spread>0?'+'+g.spread:String(g.spread);
-      html+=`<div class="game-row-d" style="border-left:3px solid ${pc}" onclick="toggleDetail('dd-${g.g}')">
-        <div style="font-size:15px;font-weight:700;color:var(--accent)">${g.g}</div>
+      const dc=g.pred==='W'?'#22c55e':g.pred==='D'?'#eab308':'#ef4444';
+      const mutedC=g.pred==='W'?'rgba(34,197,94,0.45)':g.pred==='D'?'rgba(234,179,8,0.45)':'rgba(239,68,68,0.45)';
+      html+=`<div class="game-row-d" style="border:1.5px dashed ${mutedC};border-left:3px dashed ${mutedC};opacity:0.8" onclick="toggleDetail('dd-${g.g}')">
+        <div style="font-size:15px;font-weight:700;color:var(--text3)">${g.g}</div>
         <div style="font-size:9px;color:var(--text3)">${g.date}</div>
-        <div><span style="font-weight:700;color:${t.color}">${t.short}</span><span style="font-size:9px;color:var(--text3);margin-left:5px">${g.home?'Home':'Away'}</span></div>
-        <div><div style="font-size:13px;font-weight:700;color:${wc}">${g.win}%</div><div class="win-bar-wrap"><div class="win-bar" style="width:${g.win}%;background:${wc}"></div></div></div>
-        <div style="font-weight:700;color:${g.spread<=0?'#22c55e':'#f97316'}">${sp}</div>
-        <div style="font-size:13px;font-weight:700;color:${g.ml<0?'#22c55e':'#f97316'}">${ml}</div>
-        <div style="font-weight:700">${g.ou}</div>
-        <div><span class="badge" style="color:${pc};border-color:${pc}">${g.pred}</span></div>
-        <div style="font-weight:700">${g.score}</div>
+        <div><span style="font-weight:700;color:${t.color};opacity:0.7">${t.short}</span><span style="font-size:9px;color:var(--text3);margin-left:5px">${g.home?'Home':'Away'}</span></div>
+        <div><div style="font-size:13px;font-weight:700;color:${wc};opacity:0.7">${g.win}%</div><div class="win-bar-wrap"><div class="win-bar" style="width:${g.win}%;background:${wc};opacity:0.5"></div></div></div>
+        <div style="font-weight:700;color:${g.spread<=0?'#22c55e':'#f97316'};opacity:0.6">${sp}</div>
+        <div style="font-size:13px;font-weight:700;color:${g.ml<0?'#22c55e':'#f97316'};opacity:0.6">${ml}</div>
+        <div style="font-weight:700;color:var(--text3)">${g.ou}</div>
+        <div><span class="badge" style="color:${mutedC};border-color:${mutedC};border-style:dashed">${g.pred}</span><div style="font-size:8px;color:var(--text3);letter-spacing:1px;margin-top:2px;text-align:center">PRED</div></div>
+        <div style="font-weight:700;color:var(--text3)">${g.score}</div>
       </div>
       <div id="dd-${g.g}" style="display:none">${detailHTML(g)}</div>`;
     }
@@ -888,9 +970,10 @@ function buildForecastMobile(){
     const t=TEAMS[g.opp]||{short:g.opp,color:'#64748b'};
     const pc=g.pred==='W'?'#22c55e':'#ef4444';
     if(g.played){
-      html+=`<div class="game-card" style="border-left:4px solid #22c55e;opacity:0.85" onclick="toggleDetail('dm-${g.g}')">
+      const rc=g.pred==='W'?'#22c55e':g.pred==='D'?'#eab308':'#ef4444';
+      html+=`<div class="game-card" style="border-left:4px solid ${rc};opacity:0.85" onclick="toggleDetail('dm-${g.g}')">
         <div class="card-header">
-          <div class="card-num" style="color:#22c55e">${g.g}</div>
+          <div class="card-num" style="color:${rc}">${g.g}</div>
           <div class="card-opp-block">
             <div class="card-opp" style="color:${t.color}">${t.short}</div>
             <div class="card-meta">
@@ -900,40 +983,42 @@ function buildForecastMobile(){
             </div>
           </div>
           <div class="card-pct-block">
-            <div class="card-pct" style="color:#22c55e;font-size:14px">FINAL</div>
+            <div class="card-pct" style="color:${rc};font-size:14px">FINAL</div>
           </div>
         </div>
         <div class="card-footer">
-          <div><div class="card-score-label">Result</div><div class="card-score" style="color:#22c55e">${g.score}</div></div>
-          <span class="card-pick" style="color:#22c55e;border-color:#22c55e">WIN</span>
+          <div><div class="card-score-label">Result</div><div class="card-score" style="color:${rc}">${g.score}</div></div>
+          <span class="card-pick" style="color:${rc};border-color:${rc}">${g.pred==='W'?'WIN':g.pred==='D'?'DRAW':'LOSS'}</span>
         </div>
       </div>
       <div id="dm-${g.g}" style="display:none">${detailHTML(g)}</div>`;
     } else {
       const wc=winColor(g.win),ml=g.ml>0?'+'+g.ml:String(g.ml),sp=g.spread>0?'+'+g.spread:String(g.spread);
-      html+=`<div class="game-card" style="border-left:4px solid ${pc}" onclick="toggleDetail('dm-${g.g}')">
+      const mdc=g.pred==='W'?'rgba(34,197,94,0.4)':g.pred==='D'?'rgba(234,179,8,0.4)':'rgba(239,68,68,0.4)';
+      html+=`<div class="game-card" style="border:1.5px dashed ${mdc};border-left:4px dashed ${mdc};opacity:0.75" onclick="toggleDetail('dm-${g.g}')">
         <div class="card-header">
-          <div class="card-num">${g.g}</div>
+          <div class="card-num" style="color:var(--text3)">${g.g}</div>
           <div class="card-opp-block">
-            <div class="card-opp" style="color:${t.color}">${t.short}</div>
+            <div class="card-opp" style="color:${t.color};opacity:0.7">${t.short}</div>
             <div class="card-meta">
               <span class="card-date">${g.date}</span>
               <span class="card-venue">${g.home?'Home':'Away'}</span>
+              <span class="card-venue" style="color:var(--text3);border-color:var(--border2);border-style:dashed">PRED</span>
             </div>
           </div>
           <div class="card-pct-block">
-            <div class="card-pct" style="color:${wc}">${g.win}%</div>
-            <div class="win-bar-wrap" style="width:56px;margin-left:auto;margin-top:4px"><div class="win-bar" style="width:${g.win}%;background:${wc}"></div></div>
+            <div class="card-pct" style="color:${wc};opacity:0.7">${g.win}%</div>
+            <div class="win-bar-wrap" style="width:56px;margin-left:auto;margin-top:4px"><div class="win-bar" style="width:${g.win}%;background:${wc};opacity:0.5"></div></div>
           </div>
         </div>
         <div class="card-stats">
-          <div class="stat-cell"><div class="stat-label">Spread</div><div class="stat-val" style="color:${g.spread<=0?'#22c55e':'#f97316'}">${sp}</div></div>
-          <div class="stat-cell"><div class="stat-label">Moneyline</div><div class="stat-val" style="color:${g.ml<0?'#22c55e':'#f97316'}">${ml}</div></div>
-          <div class="stat-cell"><div class="stat-label">O/U</div><div class="stat-val">${g.ou}</div></div>
+          <div class="stat-cell"><div class="stat-label">Spread</div><div class="stat-val" style="color:var(--text3)">${sp}</div></div>
+          <div class="stat-cell"><div class="stat-label">Moneyline</div><div class="stat-val" style="color:var(--text3)">${ml}</div></div>
+          <div class="stat-cell"><div class="stat-label">O/U</div><div class="stat-val" style="color:var(--text3)">${g.ou}</div></div>
         </div>
         <div class="card-footer">
-          <div><div class="card-score-label">Predicted</div><div class="card-score">${g.score}</div></div>
-          <span class="card-pick" style="color:${pc};border-color:${pc}">${g.pred==='W'?'WIN':'LOSS'}</span>
+          <div><div class="card-score-label">Predicted</div><div class="card-score" style="color:var(--text3)">${g.score}</div></div>
+          <span class="card-pick" style="color:${mdc};border-color:${mdc};border-style:dashed">${g.pred==='W'?'WIN':g.pred==='D'?'DRAW':'LOSS'}</span>
         </div>
       </div>
       <div id="dm-${g.g}" style="display:none">${detailHTML(g)}</div>`;
@@ -1114,17 +1199,18 @@ function buildTimeline(){
 ───────────────────────────────────────── */
 function showView(v){
   currentView=v;
-  ['forecast','network','heatmap','bubble','timeline','standings'].forEach(id=>{
+  ['forecast','network','heatmap','bubble','timeline','standings','elo'].forEach(id=>{
     document.getElementById('view-'+id).style.display=id===v?'block':'none';
   });
   document.querySelectorAll('.tab').forEach((t,i)=>{
-    t.classList.toggle('active',['forecast','network','heatmap','bubble','timeline','standings'][i]===v);
+    t.classList.toggle('active',['forecast','network','heatmap','bubble','timeline','standings','elo'][i]===v);
   });
   if(v==='network')setTimeout(buildNetwork,60);
   if(v==='heatmap')buildHeatmap();
   if(v==='bubble')setTimeout(buildBubble,60);
   if(v==='timeline')buildTimeline();
   if(v==='standings')buildStandings();
+  if(v==='elo')buildElo();
 }
 
 /* ─────────────────────────────────────────
@@ -1236,8 +1322,311 @@ function renderStandingsTrend(){
 
 
 /* ─────────────────────────────────────────
-   INIT
+   ELO ENGINE — Full Fall 2025 + Spring 2026 dataset
 ───────────────────────────────────────── */
+const ELO_TEAMS={
+  'ARL 2015G Red':    {key:'ARL_RED',  color:'#dc2626', arl:true,  short:'ARL Red'},
+  'ARL 2015G White':  {key:'ARL_W',    color:'#6b7280', arl:true,  short:'ARL White'},
+  'ARL 2016G Pre-Acad 1':{key:'PRE_ACAD',color:'#f97316',arl:true, short:'Pre-Acad 1'},
+  'VRSC 15G Pre-GA':  {key:'VRSC',     color:'#f59e0b', arl:false, short:'VRSC Pre-GA'},
+  'VALR 2015G Gold':  {key:'VALR',     color:'#eab308', arl:false, short:'VALR Gold'},
+  'ALEX 2015G Red':   {key:'ALEX_R',   color:'#7c3aed', arl:false, short:'Alex 15R'},
+  'ALEX 2016 Girls Red':{key:'ALEX_16R',color:'#14b8a6',arl:false, short:'Alex 16R'},
+  'VISTA Liberty FC 2015G':{key:'VISTA',color:'#10b981',arl:false, short:'VISTA'},
+  'SYC 2016 Pre-GA':  {key:'SYC',      color:'#ec4899', arl:false, short:'SYC Pre-GA'},
+  'MCLN 2015G White': {key:'MCLN_W',   color:'#3b82f6', arl:false, short:'McLean W'},
+};
+
+// VISTA Freedom FC 2015G = VISTA Liberty FC 2015G (same team, renamed for Spring)
+const TEAM_ALIAS={'VISTA Freedom FC 2015G':'VISTA Liberty FC 2015G'};
+function teamName(t){return TEAM_ALIAS[t]||t;}
+
+const FALL_ALL=[
+  // NG11DK — Fall 2025
+  {d:'2025-09-06',h:'ALEX 2015G Red',a:'ARL 2016G Pre-Acad 1',hg:2,ag:4},
+  {d:'2025-09-07',h:'VSA 15G Pre-ECNL II',a:'ARL 2015G Red',hg:1,ag:2},
+  {d:'2025-09-07',h:'MCLN 2015G Green',a:'VALR 2015G Gold',hg:8,ag:0},
+  {d:'2025-09-07',h:'ALEX 2015G Red',a:'SYC 2015 Pre-GA II',hg:1,ag:0},
+  {d:'2025-09-07',h:'ARL 2016G Pre-Acad 1',a:'VRSC 15G Pre-GA',hg:1,ag:2},
+  {d:'2025-09-13',h:'VRSC 15G Pre-GA',a:'MCLN 2015G Green',hg:0,ag:5},
+  {d:'2025-09-13',h:'SYC 2015 Pre-GA II',a:'ARL 2015G Red',hg:4,ag:3},
+  {d:'2025-09-14',h:'VRSC 15G Pre-GA',a:'LOUD 2015G White',hg:3,ag:3},
+  {d:'2025-09-14',h:'ARL 2016G Pre-Acad 1',a:'VYS Red 15G',hg:1,ag:0},
+  {d:'2025-09-14',h:'ARL 2015G Red',a:'ALEX 2015G Red',hg:3,ag:1},
+  {d:'2025-09-20',h:'VRSC 15G Pre-GA',a:'VYS Red 15G',hg:8,ag:0},
+  {d:'2025-09-21',h:'VALR 2015G Gold',a:'ARL 2016G Pre-Acad 1',hg:0,ag:3},
+  {d:'2025-09-21',h:'MCLN 2015G Green',a:'ALEX 2015G Red',hg:3,ag:1},
+  {d:'2025-09-21',h:'VRSC 15G Pre-GA',a:'ARL 2015G Red',hg:1,ag:0},
+  {d:'2025-09-28',h:'VALR 2015G Gold',a:'VRSC 15G Pre-GA',hg:0,ag:6},
+  {d:'2025-09-28',h:'ARL 2016G Pre-Acad 1',a:'SYC 2015 Pre-GA II',hg:3,ag:3},
+  {d:'2025-09-28',h:'ARL 2015G Red',a:'LOUD 2015G White',hg:4,ag:1},
+  {d:'2025-09-28',h:'VSA 15G Pre-ECNL II',a:'ALEX 2015G Red',hg:0,ag:3},
+  {d:'2025-10-04',h:'MCLN 2015G Green',a:'VSA 15G Pre-ECNL II',hg:5,ag:0},
+  {d:'2025-10-05',h:'ARL 2015G Red',a:'ARL 2016G Pre-Acad 1',hg:3,ag:0},
+  {d:'2025-10-05',h:'ALEX 2015G Red',a:'VALR 2015G Gold',hg:4,ag:2},
+  {d:'2025-10-05',h:'SYC 2015 Pre-GA II',a:'VYS Red 15G',hg:7,ag:1},
+  {d:'2025-10-19',h:'VSA 15G Pre-ECNL II',a:'SYC 2015 Pre-GA II',hg:1,ag:7},
+  {d:'2025-10-19',h:'ARL 2016G Pre-Acad 1',a:'LOUD 2015G White',hg:1,ag:1},
+  {d:'2025-10-19',h:'ALEX 2015G Red',a:'VRSC 15G Pre-GA',hg:1,ag:2},
+  {d:'2025-10-19',h:'VALR 2015G Gold',a:'VYS Red 15G',hg:2,ag:0},
+  {d:'2025-10-19',h:'MCLN 2015G Green',a:'ARL 2015G Red',hg:2,ag:0},
+  {d:'2025-10-25',h:'SYC 2015 Pre-GA II',a:'VRSC 15G Pre-GA',hg:1,ag:1},
+  {d:'2025-10-26',h:'MCLN 2015G Green',a:'ARL 2016G Pre-Acad 1',hg:7,ag:0},
+  {d:'2025-10-26',h:'SYC 2015 Pre-GA II',a:'VALR 2015G Gold',hg:5,ag:1},
+  {d:'2025-10-26',h:'VRSC 15G Pre-GA',a:'VSA 15G Pre-ECNL II',hg:6,ag:1},
+  {d:'2025-10-26',h:'VYS Red 15G',a:'ARL 2015G Red',hg:0,ag:2},
+  {d:'2025-11-02',h:'ALEX 2015G Red',a:'VYS Red 15G',hg:2,ag:0},
+  {d:'2025-11-02',h:'VSA 15G Pre-ECNL II',a:'ARL 2016G Pre-Acad 1',hg:1,ag:5},
+  {d:'2025-11-02',h:'ARL 2015G Red',a:'VALR 2015G Gold',hg:4,ag:1},
+  // NG11DN — Fall 2025
+  {d:'2025-09-06',h:'GFR 15G White',a:'ARL 2015G White',hg:0,ag:0},
+  {d:'2025-09-06',h:'VISTA Freedom FC 2015G',a:'PPA 2015 Green Girls',hg:3,ag:0},
+  {d:'2025-09-06',h:'VRSC 15G Pre-GA2',a:"FCCH '15 Girls Red",hg:3,ag:1},
+  {d:'2025-09-06',h:'BRU 15G Orange',a:'ALEX 2015G White',hg:5,ag:0},
+  {d:'2025-09-07',h:'BRU 15G Orange',a:'PW Courage NCSL Red G15',hg:3,ag:0},
+  {d:'2025-09-07',h:'ALEX 2015G White',a:'VRSC 15G Pre-GA2',hg:2,ag:0},
+  {d:'2025-09-07',h:'MCLN 2015G White',a:'ARL 2015G White',hg:1,ag:3},
+  {d:'2025-09-07',h:'VISTA Freedom FC 2015G',a:'GFR 15G White',hg:13,ag:0},
+  {d:'2025-09-07',h:'PPA 2015 Green Girls',a:"FCCH '15 Girls Red",hg:1,ag:0},
+  {d:'2025-09-14',h:'ARL 2015G White',a:'PW Courage NCSL Red G15',hg:2,ag:0},
+  {d:'2025-09-14',h:"FCCH '15 Girls Red",a:'ALEX 2015G White',hg:2,ag:1},
+  {d:'2025-09-14',h:'VRSC 15G Pre-GA2',a:'VISTA Freedom FC 2015G',hg:0,ag:4},
+  {d:'2025-09-14',h:'BRU 15G Orange',a:'MCLN 2015G White',hg:2,ag:3},
+  {d:'2025-09-21',h:'MCLN 2015G White',a:'PPA 2015 Green Girls',hg:3,ag:2},
+  {d:'2025-09-21',h:'PW Courage NCSL Red G15',a:"FCCH '15 Girls Red",hg:1,ag:0},
+  {d:'2025-09-21',h:'ARL 2015G White',a:'VRSC 15G Pre-GA2',hg:3,ag:0},
+  {d:'2025-09-21',h:'GFR 15G White',a:'BRU 15G Orange',hg:2,ag:3},
+  {d:'2025-09-21',h:'VISTA Freedom FC 2015G',a:'ALEX 2015G White',hg:7,ag:1},
+  {d:'2025-09-27',h:'MCLN 2015G White',a:'VRSC 15G Pre-GA2',hg:0,ag:0},
+  {d:'2025-09-28',h:"FCCH '15 Girls Red",a:'ARL 2015G White',hg:1,ag:3},
+  {d:'2025-09-28',h:'MCLN 2015G White',a:'VISTA Freedom FC 2015G',hg:1,ag:0},
+  {d:'2025-10-04',h:'PW Courage NCSL Red G15',a:'MCLN 2015G White',hg:0,ag:0},
+  {d:'2025-10-04',h:'BRU 15G Orange',a:'VRSC 15G Pre-GA2',hg:2,ag:3},
+  {d:'2025-10-05',h:'ARL 2015G White',a:'PPA 2015 Green Girls',hg:5,ag:0},
+  {d:'2025-10-05',h:'PW Courage NCSL Red G15',a:'VISTA Freedom FC 2015G',hg:1,ag:3},
+  {d:'2025-10-19',h:'BRU 15G Orange',a:'ARL 2015G White',hg:1,ag:2},
+  {d:'2025-10-19',h:'GFR 15G White',a:'MCLN 2015G White',hg:1,ag:2},
+  {d:'2025-10-19',h:'PPA 2015 Green Girls',a:'VRSC 15G Pre-GA2',hg:0,ag:3},
+  {d:'2025-10-19',h:'VISTA Freedom FC 2015G',a:"FCCH '15 Girls Red",hg:11,ag:1},
+  {d:'2025-10-26',h:'ALEX 2015G White',a:'ARL 2015G White',hg:0,ag:4},
+  {d:'2025-10-26',h:'VRSC 15G Pre-GA2',a:'GFR 15G White',hg:2,ag:2},
+  {d:'2025-10-26',h:'MCLN 2015G White',a:"FCCH '15 Girls Red",hg:2,ag:1},
+  {d:'2025-10-26',h:'VISTA Freedom FC 2015G',a:'BRU 15G Orange',hg:4,ag:1},
+  {d:'2025-11-02',h:'ALEX 2015G White',a:'MCLN 2015G White',hg:0,ag:2},
+  {d:'2025-11-02',h:'ARL 2015G White',a:'VISTA Freedom FC 2015G',hg:0,ag:0},
+  {d:'2025-11-02',h:'VRSC 15G Pre-GA2',a:'PW Courage NCSL Red G15',hg:0,ag:1},
+  {d:'2025-11-02',h:'PPA 2015 Green Girls',a:'BRU 15G Orange',hg:2,ag:0},
+  // Pre-Spring Tournaments
+  {d:'2025-03-15',h:'ARL 2015G Red',a:'MCLN 2015G White',hg:2,ag:1},
+  {d:'2025-05-25',h:'ALEX 2015G Red',a:'ARL 2015G Red',hg:0,ag:3},
+  {d:'2025-05-25',h:'ARL 2016G Pre-Acad 1',a:'ALEX 2016 Girls Red',hg:2,ag:0},
+  {d:'2025-08-23',h:'ARL 2015G White',a:'MCLN 2015G White',hg:2,ag:1},
+  {d:'2025-08-24',h:'MCLN 2015G White',a:'ARL 2015G White',hg:0,ag:1},
+  {d:'2025-08-30',h:'ARL 2015G Red',a:'SYC 2015 Pre-GA II',hg:4,ag:1},
+  {d:'2025-08-31',h:'ARL 2015G Red',a:'VRSC 15G Pre-GA',hg:1,ag:3},
+  {d:'2025-08-31',h:'VSA 15G Pre-ECNL II',a:'ARL 2016G Pre-Acad 1',hg:0,ag:4},
+  // Spring 2026 NCSL
+  {d:'2026-03-21',h:'ARL 2015G Red',a:'SYC 2016 Pre-GA',hg:4,ag:0},
+  {d:'2026-04-11',h:'VALR 2015G Gold',a:'VISTA Liberty FC 2015G',hg:3,ag:3},
+  {d:'2026-04-11',h:'MCLN 2015G White',a:'ARL 2016G Pre-Acad 1',hg:1,ag:3},
+  {d:'2026-04-11',h:'SYC 2016 Pre-GA',a:'ARL 2015G White',hg:2,ag:5},
+  {d:'2026-04-12',h:'VISTA Liberty FC 2015G',a:'ALEX 2015G Red',hg:2,ag:1},
+  {d:'2026-04-12',h:'VRSC 15G Pre-GA',a:'ARL 2015G White',hg:1,ag:1},
+  {d:'2026-04-12',h:'ARL 2016G Pre-Acad 1',a:'SYC 2016 Pre-GA',hg:1,ag:1},
+  {d:'2026-04-12',h:'VALR 2015G Gold',a:'ALEX 2016 Girls Red',hg:0,ag:1},
+  {d:'2026-04-18',h:'VRSC 15G Pre-GA',a:'ARL 2015G Red',hg:0,ag:2},
+  {d:'2026-04-19',h:'ARL 2015G Red',a:'VALR 2015G Gold',hg:2,ag:1},
+  {d:'2026-04-19',h:'VISTA Liberty FC 2015G',a:'VRSC 15G Pre-GA',hg:1,ag:1},
+  {d:'2026-04-19',h:'MCLN 2015G White',a:'SYC 2016 Pre-GA',hg:1,ag:4},
+  {d:'2026-04-19',h:'ARL 2015G White',a:'ALEX 2015G Red',hg:2,ag:2},
+];
+
+// Spring division teams
+const DIV_TEAMS=Object.keys(ELO_TEAMS);
+
+function computeEloFull(){
+  const ratings={};
+  // Seed all teams at 1500 (K-factor handles convergence)
+  const allTeams=new Set();
+  FALL_ALL.forEach(m=>{allTeams.add(teamName(m.h));allTeams.add(teamName(m.a));});
+  allTeams.forEach(t=>{ratings[t]=1500;});
+
+  const counts={};
+  allTeams.forEach(t=>{counts[t]=0;});
+
+  // Snapshots after each spring week boundary
+  const springCutoffs=['2026-03-20','2026-04-12','2026-04-19','2026-04-25'];
+  const snapshots=[]; // snapshot[0]=after fall, snapshot[1]=after wk1, etc.
+  const history={}; // per division team
+  DIV_TEAMS.forEach(t=>{history[t]=[];});
+
+  function movMult(gd){const g=Math.min(gd,5);return g<=1?1:g===2?1.1:g===3?1.25:1.4;}
+
+  function processGame(m){
+    const h=teamName(m.h),a=teamName(m.a);
+    if(!(h in ratings)){ratings[h]=1500;counts[h]=0;}
+    if(!(a in ratings)){ratings[a]=1500;counts[a]=0;}
+    const ra=ratings[h],rb=ratings[a];
+    const ea=1/(1+Math.pow(10,(rb-ra)/400));
+    const sa=m.hg>m.ag?1:m.hg<m.ag?0:0.5;
+    const gd=Math.abs(m.hg-m.ag);
+    const K=28*movMult(gd);
+    const delta=K*(sa-ea);
+    counts[h]++;counts[a]++;
+    ratings[h]=ra+delta;ratings[a]=rb-delta;
+
+    // Record history for div teams
+    if(history[h]){history[h].push({date:m.d,opp:a,hg:m.hg,ag:m.ag,home:true,before:ra,after:ratings[h],result:sa===1?'W':sa===0?'L':'D'});}
+    if(history[a]){history[a].push({date:m.d,opp:h,hg:m.ag,ag:m.hg,home:false,before:rb,after:ratings[a],result:sa===0?'W':sa===1?'L':'D'});}
+  }
+
+  // Sort all games chronologically
+  const sorted=[...FALL_ALL].sort((a,b)=>a.d.localeCompare(b.d));
+
+  let snapIdx=0;
+  sorted.forEach(m=>{
+    // Take snapshot before this game if we've crossed a boundary
+    while(snapIdx<springCutoffs.length && m.d>springCutoffs[snapIdx]){
+      snapshots.push({ratings:JSON.parse(JSON.stringify(ratings)),label:['Fall Base','After Wk 1 (Apr 12)','After Wk 2 (Apr 19)','After Wk 3 (Apr 25)'][snapIdx]});
+      snapIdx++;
+    }
+    processGame(m);
+  });
+  while(snapshots.length<4){
+    snapshots.push({ratings:JSON.parse(JSON.stringify(ratings)),label:['Fall Base','After Wk 1 (Apr 12)','After Wk 2 (Apr 19)','After Wk 3 (Apr 25)'][snapshots.length]});
+  }
+
+  return{snapshots,history,finalRatings:ratings,counts};
+}
+
+function buildElo(){
+  const{snapshots,history,finalRatings,counts}=computeEloFull();
+  const current=snapshots[snapshots.length-1];
+  const sorted=DIV_TEAMS.slice().sort((a,b)=>(current.ratings[b]||1500)-(current.ratings[a]||1500));
+  const maxElo=current.ratings[sorted[0]]||1500;
+  const minElo=current.ratings[sorted[sorted.length-1]]||1500;
+
+  // ── Elo explainer toggle ──
+  const explainerHtml=`
+  <div style="margin-bottom:18px">
+    <button onclick="document.getElementById('elo-explainer').style.display=document.getElementById('elo-explainer').style.display==='none'?'block':'none'"
+      style="font-family:var(--font);font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:7px 14px;background:transparent;border:0.5px solid var(--border2);border-radius:var(--radius);color:var(--text3);cursor:pointer">
+      ▸ What is Elo &amp; how is it calculated?
+    </button>
+    <div id="elo-explainer" style="display:none;margin-top:12px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px;font-size:11px;line-height:1.8;color:var(--text2)">
+      <div style="font-size:10px;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;font-weight:700">How Elo Works</div>
+      <p style="margin-bottom:10px">Elo is a rating system originally designed for chess but now widely used in sports. Every team starts at the same base (1500). After each game, points transfer from the loser to the winner — but <strong style="color:var(--text)">how many points</strong> depends on how surprising the result was.</p>
+      <div style="background:var(--bg3);border-radius:var(--radius);padding:12px;margin:10px 0;font-family:var(--font)">
+        <div style="font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">The Formula</div>
+        <div style="color:var(--text);margin-bottom:6px"><span style="color:#22c55e">New Rating</span> = Old Rating + K × (<span style="color:#22c55e">Actual Result</span> − <span style="color:#3b82f6">Expected Result</span>)</div>
+        <div style="font-size:10px;color:var(--text3)">Where: Win = 1.0 · Draw = 0.5 · Loss = 0.0</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px">Expected = 1 ÷ (1 + 10^((Opponent Rating − Your Rating) / 400))</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0">
+        <div style="background:var(--bg3);border-radius:var(--radius);padding:10px;border-left:2px solid #22c55e">
+          <div style="font-size:9px;color:#22c55e;letter-spacing:1px;margin-bottom:4px">UPSET WIN</div>
+          <div style="font-size:10px">Underdog (1200) beats favorite (1600) → <strong style="color:#22c55e">+massive points</strong> for underdog. The system was surprised — big reward.</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:var(--radius);padding:10px;border-left:2px solid #eab308">
+          <div style="font-size:9px;color:#eab308;letter-spacing:1px;margin-bottom:4px">EXPECTED WIN</div>
+          <div style="font-size:10px">Favorite (1600) beats underdog (1200) → <strong style="color:#eab308">+small points</strong>. The system expected this — small reward.</div>
+        </div>
+      </div>
+      <p style="margin-bottom:8px"><strong style="color:var(--text)">K-Factor (28):</strong> Controls how much each game moves the rating. Lower K = more stable ratings. We use K=28 for youth soccer — enough to capture real development.</p>
+      <p style="margin-bottom:8px"><strong style="color:var(--text)">Margin of Victory Multiplier:</strong> A 3-0 win generates more Elo movement than a 1-0 win. We cap the multiplier at 5 goals so teams aren't rewarded for running up the score.</p>
+      <p><strong style="color:var(--text)">Connective Tissue:</strong> Ratings only calibrate when teams share common opponents. ARL White playing in NG11DN with McLean W and VISTA lets us compare all three teams even without a direct head-to-head.</p>
+    </div>
+  </div>`;
+
+  // ── Week selector ──
+  const weekLabels=snapshots.map((s,i)=>i===0?'Fall Base':s.label);
+  let weekBtns=weekLabels.map((l,i)=>
+    `<button id="elo-wk-${i}" onclick="selectEloWeek(${i})" style="padding:5px 11px;font-size:10px;font-family:var(--font);background:${i===snapshots.length-1?'var(--accent)':'transparent'};color:${i===snapshots.length-1?'#000':'var(--text3)'};border:0.5px solid ${i===snapshots.length-1?'var(--accent)':'var(--border2)'};cursor:pointer;letter-spacing:1px;text-transform:uppercase;border-radius:var(--radius)">${l}</button>`
+  ).join('');
+
+  // ── Current week table (default = latest) ──
+  function tableHtml(snapIdx){
+    const snap=snapshots[snapIdx];
+    const prevSnap=snapIdx>0?snapshots[snapIdx-1]:null;
+    const srt=DIV_TEAMS.slice().sort((a,b)=>(snap.ratings[b]||1500)-(snap.ratings[a]||1500));
+    const maxE=snap.ratings[srt[0]]||1500,minE=snap.ratings[srt[srt.length-1]]||1500;
+    let html=`<table style="width:100%;border-collapse:collapse;font-size:11px;font-family:var(--font);min-width:420px">
+      <thead><tr>
+        ${['Rank','Team','Elo','','Δ vs Prior','Last 3'].map((h,i)=>`<th style="padding:6px 8px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);border-bottom:0.5px solid var(--border2);text-align:${i===1?'left':'center'}">${h}</th>`).join('')}
+      </tr></thead><tbody>`;
+    srt.forEach((t,i)=>{
+      const ti=ELO_TEAMS[t];
+      const r=Math.round(snap.ratings[t]||1500);
+      const prev=prevSnap?Math.round(prevSnap.ratings[t]||1500):r;
+      const delta=r-prev;
+      const pct=maxE>minE?Math.round(((r-minE)/(maxE-minE))*100):50;
+      const last3=(history[t]||[]).filter(g=>new Date(g.date)<=new Date(snap.ratings['_date']||'2099-01-01')).slice(-3).reverse().map(g=>{
+        const c=g.result==='W'?'#22c55e':g.result==='D'?'#eab308':'#ef4444';
+        return`<span style="display:inline-block;width:16px;height:16px;background:${c}22;border:0.5px solid ${c};border-radius:2px;font-size:8px;font-weight:700;color:${c};text-align:center;line-height:16px;margin-right:2px">${g.result}</span>`;
+      }).join('');
+      const barColor=r>=1600?'#22c55e':r>=1520?'#eab308':'#ef4444';
+      html+=`<tr style="${ti.arl?`background:${ti.color}10;border-left:2px solid ${ti.color};`:''}border-bottom:0.5px solid var(--border)">
+        <td style="text-align:center;font-size:14px;font-weight:700;color:${ti.arl?ti.color:'var(--text2)'}">${i+1}</td>
+        <td style="padding:8px;font-weight:${ti.arl?700:400};color:${ti.arl?ti.color:'var(--text)'}">
+          ${ti.short}${ti.arl?`<span style="font-size:8px;padding:1px 4px;border:0.5px solid ${ti.color};border-radius:2px;color:${ti.color};margin-left:5px">ARL</span>`:''}
+        </td>
+        <td style="text-align:center;font-size:14px;font-weight:700;color:${barColor}">${r}</td>
+        <td style="padding:0 8px">
+          <div style="height:4px;background:var(--border);border-radius:2px;width:80px;margin:0 auto">
+            <div style="height:100%;width:${pct}%;background:${barColor};border-radius:2px"></div>
+          </div>
+        </td>
+        <td style="text-align:center;font-size:10px;font-weight:700;color:${delta>0?'#22c55e':delta<0?'#ef4444':'var(--text3)'}">${delta>0?'+':''}${delta!==0?delta:'—'}</td>
+        <td style="text-align:center">${last3||'<span style="color:var(--text3);font-size:9px">—</span>'}</td>
+      </tr>`;
+    });
+    html+='</tbody></table>';
+    return html;
+  }
+
+  window.eloSnapshots=snapshots;
+  window.eloTableHtml=tableHtml;
+  window.selectEloWeek=function(i){
+    document.querySelectorAll('[id^=elo-wk-]').forEach((b,bi)=>{
+      b.style.background=bi===i?'var(--accent)':'transparent';
+      b.style.color=bi===i?'#000':'var(--text3)';
+      b.style.borderColor=bi===i?'var(--accent)':'var(--border2)';
+    });
+    const container=document.getElementById('elo-week-table')||document.getElementById('elo-table');
+    if(container)container.innerHTML=tableHtml(i);
+  };
+
+  // ── Insights ──
+  const insightsHtml=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px">
+      <div style="background:var(--bg2);border:0.5px solid var(--border);border-left:3px solid #dc2626;border-radius:var(--radius);padding:12px">
+        <div style="font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">Biggest riser vs Fall Base</div>
+        <div style="font-weight:700;color:#dc2626">ARL Red <span style="color:#22c55e">+${Math.round((current.ratings['ARL 2015G Red']||1500)-(snapshots[0].ratings['ARL 2015G Red']||1500))}</span></div>
+        <div style="font-size:10px;color:var(--text2);margin-top:4px">Beating VRSC 2-0 after two prior losses was the single largest Elo swing in the dataset. Now the highest-rated division team by a wide margin.</div>
+      </div>
+      <div style="background:var(--bg2);border:0.5px solid var(--border);border-left:3px solid #6b7280;border-radius:var(--radius);padding:12px">
+        <div style="font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">Biggest surprise</div>
+        <div style="font-weight:700;color:#6b7280">ARL White <span style="color:#22c55e">+${Math.round((current.ratings['ARL 2015G White']||1500)-(snapshots[0].ratings['ARL 2015G White']||1500))}</span></div>
+        <div style="font-size:10px;color:var(--text2);margin-top:4px">Fall 2025 wins vs McLean W (twice) and VRSC2, plus the Spring 5-2 SYC upset. Fall division connective tissue properly calibrates White's true level.</div>
+      </div>
+      <div style="background:var(--bg2);border:0.5px solid var(--border);border-left:3px solid #f97316;border-radius:var(--radius);padding:12px">
+        <div style="font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">Most overrated by GotSport</div>
+        <div style="font-weight:700;color:#f97316">Pre-Acad <span style="color:#ef4444">${Math.round((current.ratings['ARL 2016G Pre-Acad 1']||1500)-1500)} from base</span></div>
+        <div style="font-size:10px;color:var(--text2);margin-top:4px">GotSport ranked #2 VA but Fall losses to Red (0-3) and McLean Green (0-7) drove the Elo down. Spring form (W McLean W, D SYC) partially recovering.</div>
+      </div>
+      <div style="background:var(--bg2);border:0.5px solid var(--border);border-left:3px solid #14b8a6;border-radius:var(--radius);padding:12px">
+        <div style="font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">Data quality</div>
+        <div style="font-weight:700;color:#14b8a6">${FALL_ALL.length} total matches</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:4px">Full Fall 2025 NG11DK + NG11DN datasets. Spring 2026 results through Apr 19. VISTA Freedom = VISTA Liberty (same team renamed). SYC 2015 Pre-GA II ≠ SYC 2016 Pre-GA.</div>
+      </div>
+    </div>`;
+
+  document.getElementById('elo-bars').innerHTML=`${explainerHtml}<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">${weekBtns}</div>`;
+  document.getElementById('elo-table').innerHTML=`<div id="elo-week-table" style="overflow-x:auto;-webkit-overflow-scrolling:touch">${tableHtml(snapshots.length-1)}</div>`;
+  document.getElementById('elo-insights').innerHTML=insightsHtml;
+}
+
+
 buildMetrics();
 buildForecastDesktop();
 buildForecastMobile();
