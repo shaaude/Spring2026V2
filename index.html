@@ -64,7 +64,7 @@
 .win-bar-wrap{height:3px;background:var(--border);margin-top:3px;border-radius:2px;overflow:hidden}
 .win-bar{height:100%;border-radius:2px}
 .badge{display:inline-block;padding:2px 7px;font-size:9px;border-radius:var(--radius);border:0.5px solid;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
-.section-label{font-size:9px;color:var(--text2);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px}
+.section-label{font-size:9px;color:var(--text2);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;text-align:center}
 .game-detail{background:var(--bg3);border-top:0.5px solid var(--border);padding:14px;font-size:11px}
 .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px}
 @media(max-width:500px){.detail-grid{grid-template-columns:1fr}}
@@ -72,8 +72,10 @@
 /* DESKTOP TABLE */
 .forecast-desktop{display:block}
 .forecast-mobile{display:none}
-.col-hdr{display:grid;grid-template-columns:28px 64px 1fr 54px 54px 62px 42px 40px 68px;gap:5px;padding:4px 14px;font-size:9px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
-.game-row-d{display:grid;grid-template-columns:28px 64px 1fr 54px 54px 62px 42px 40px 68px;gap:5px;padding:11px 14px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:5px;cursor:pointer;font-size:11px;align-items:center;transition:border-color .15s}
+.col-hdr{display:grid;grid-template-columns:28px 64px 1fr 54px 54px 62px 42px 40px 68px;gap:5px;padding:4px 14px;font-size:9px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;text-align:center}
+.col-hdr div:nth-child(3){text-align:left}
+.game-row-d{display:grid;grid-template-columns:28px 64px 1fr 54px 54px 62px 42px 40px 68px;gap:5px;padding:11px 14px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:5px;cursor:pointer;font-size:11px;align-items:center;transition:border-color .15s;text-align:center}
+.game-row-d>div:nth-child(3){text-align:left}
 .game-row-d:hover{border-color:var(--border2)}
 
 /* MOBILE CARDS */
